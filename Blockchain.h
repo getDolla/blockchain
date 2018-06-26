@@ -112,6 +112,14 @@ public:
         blockchain.close();
     }
 
+    string viewAt(unsigned long index) {
+        return (string) _vChain[index].getData();
+    }
+
+    unsigned long length() const {
+        return _vChain.size();
+    }
+
 private:
     unsigned int _nDifficulty;
     unsigned long _nIndex;

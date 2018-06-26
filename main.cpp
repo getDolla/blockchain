@@ -9,21 +9,35 @@ int main()
     cout << "Enter exit to exit the program." << endl;
 
     string input;
+    getline(cin, input);
 
-
-
-    cout << "Mining block 1..." << endl;
-    bChain.addBlock("Block 1 Data");
+    while(input != "exit") {
+        if (input == "store") {
+            cout << "Enter data:" << endl;
+            getline(cin, input);
+            cout << "Storing " << input << " to block..." << endl;
+            bChain.addBlock(input);
+        }
+        else if (input == "view") {
+            cout << "Enter index:" << endl;
+            unsigned long index;
+            cin >> index;
+            cout << bChain.viewAt(index) << endl;
+            cin.ignore();
+        }
+        else if (input == "length") {
+            cout << "There are " << bChain.length() - 1 << " blocks." << endl;
+        }
+        else if (input == "help") {
+            cout << "Enter exit to exit the program." << endl;
+            cout << "Enter store to store data." << endl;
+            cout << "Enter view to view data at a specific index (files on the blockchain will be saved)" << endl;
+            cout << "Enter length to see how many blocks of data exists." << endl;
+        }
+        getline(cin, input);
+    }
 
     bChain.save();
-
-    // cout << "Mining block 2..." << endl;
-    // bChain.addBlock(Block<string>(2, "Block 2 Data"));
-    //
-    // cout << "Mining block 3..." << endl;
-    // bChain.addBlock(Block<string>(3, "Block 3 Data"));
-
-
 
     return 0;
 }
