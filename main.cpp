@@ -4,8 +4,16 @@ int main()
 {
     Blockchain<string> bChain;
 
+    cout << "Blockchain data is stored in base64 format." << endl;
+    cout << "Enter help for available commands." << endl;
+    cout << "Enter exit to exit the program." << endl;
+
+    string input;
+
+
+
     cout << "Mining block 1..." << endl;
-    bChain.addBlock(Block<string>(1, "Block 1 Data"));
+    bChain.addBlock("Block 1 Data");
 
     bChain.save();
 

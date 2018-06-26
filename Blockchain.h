@@ -10,16 +10,15 @@
 #include <iostream>
 #include <fstream>
 #include "Block.h"
+#include "base64.h"
 
 using namespace std;
 
 template <typename T>
 class Blockchain {
 public:
-    Blockchain(): _nDifficulty(6)
+    Blockchain(): _nDifficulty(3), _nIndex(0)
     {
-        _vChain.emplace_back(Block<T>(0, "Genesis Block"));
-
         ifstream blockchain("blockchain");
 
     	if (!blockchain) {
@@ -27,27 +26,62 @@ public:
             exit(1);
         }
 
+    	// string line;
+    	// while(getline(blockchain, line)) {
+    	// 	cout << line << endl;
+    	// }
 
+        //Block attributes
+        unsigned int ind;
+        string prevHash;
+        time_t datTime;
+        T dataIn;
+        string decode64;
+        unsigned int nonce;
+
+        //for checking
+        string hash;
 
         //gets the genesis block:
-        if (blockchain >> ) {
-            blockData.push_back();
-            for(size_t i = 1; i << 4; ++i) {
+        if (blockchain >> ind >> datTime >> decode64 >> nonce) {
+            dataIn = base64_decode(decode64);
 
+            Block<T> block(ind, "", datTime, dataIn, nonce);
+            blockchain >> hash;
+
+            if (block.sHash != hash) {
+                cerr << "Hash inconsistency at genesis block!" << endl;
+                exit(1);
             }
 
-            Block block = Block<T>(blockData[0], block)
-        }
-        while(blockchain >> ) {
+            _nIndex = ind;
+            _vChain.push_back(block);
 
-            for(size_t i = 1; i < 5; ++i) {
+            //gets other blocks
+            while (blockchain >> ind >> prevHash >> datTime >> decode64 >> nonce) {
+                dataIn = base64_decode(decode64);
 
+                block = Block<T>(ind, prevHash, datTime, dataIn, nonce);
+                blockchain >> hash;
+                if (block.sHash != hash) {
+                    cerr << "Hash inconsistency at block " << ind << "!" << endl;
+                    exit(1);
+                }
+
+                _nIndex = ind;
+                _vChain.push_back(block);
             }
         }
+        else {
+            _vChain.emplace_back(Block<T>(0, "Genesis Block"));
+        }
+
+        blockchain.close();
     }
 
-    void addBlock(Block<T> bNew)
+    void addBlock(T data)
     {
+        Block<T> bNew(++_nIndex, data);
         bNew.sPrevHash = _getLastBlock().sHash;
         bNew.mineBlock(_nDifficulty);
         _vChain.push_back(bNew);
@@ -66,7 +100,11 @@ public:
             blockchain << block.getIndex() << " ";
             blockchain << block.sPrevHash << " ";
             blockchain << block.getDatTime() << " ";
-            blockchain << block.getData() << " ";
+
+            string encode64 = (string) block.getData();
+            encode64 = base64_encode(encode64, encode64.length());
+
+            blockchain << encode64 << " ";
             blockchain << block.getNonce() << " ";
             blockchain << block.sHash << "\n";
         }
@@ -76,6 +114,7 @@ public:
 
 private:
     unsigned int _nDifficulty;
+    unsigned long _nIndex;
     vector<Block<T>> _vChain;
 
     Block<T> _getLastBlock() const
