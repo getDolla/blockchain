@@ -45,6 +45,8 @@ public:
         //gets the genesis block:
         if (blockchain >> ind >> datTime >> decode64 >> nonce) {
             dataIn = base64_decode(decode64);
+            // cout << "decoded: " << base64_decode(decode64) << endl;
+            // cout << "line 49: " << dataIn << endl;
 
             Block<T> block(ind, "", datTime, dataIn, nonce);
             blockchain >> hash;
@@ -73,13 +75,22 @@ public:
             }
         }
         else {
-            _vChain.emplace_back(Block<T>(0, "Genesis Block"));
+            _vChain.emplace_back(Block<T>(0, T("Genesis Block")));
         }
 
         blockchain.close();
     }
 
-    void addBlock(T data)
+    void addBlock(const string& info)
+    {
+        T data = info;
+        Block<T> bNew(++_nIndex, data);
+        bNew.sPrevHash = _getLastBlock().sHash;
+        bNew.mineBlock(_nDifficulty);
+        _vChain.push_back(bNew);
+    }
+
+    void addBlock(const T& data)
     {
         Block<T> bNew(++_nIndex, data);
         bNew.sPrevHash = _getLastBlock().sHash;
@@ -112,8 +123,8 @@ public:
         blockchain.close();
     }
 
-    string viewAt(unsigned long index) {
-        return (string) _vChain[index].getData();
+    T viewAt(unsigned long index) {
+        return _vChain[index].getData();
     }
 
     unsigned long length() const {
