@@ -8,6 +8,7 @@
 
 #include <QCoreApplication>
 #include <QString>
+#include <QMessageBox>
 
 #include <vector>
 #include <iostream>
@@ -28,7 +29,9 @@ public:
         ifstream blockchain(path);
 
     	if (!blockchain) {
-            cerr << "Can not open file!" << endl;
+            QMessageBox messageBox;
+            messageBox.critical(0,"Error",QString::fromStdString("Cannot open:\n" + path + "\n"));
+            cerr << "Can not open: " << path << " !" << endl;
             exit(1);
         }
 
@@ -58,6 +61,8 @@ public:
             blockchain >> hash;
 
             if (block.sHash != hash) {
+                QMessageBox messageBox;
+                messageBox.critical(0,"Error","Hash inconsistency at genesis block!");
                 cerr << "Hash inconsistency at genesis block!" << endl;
                 exit(1);
             }
@@ -72,6 +77,8 @@ public:
                 block = Block<T>(ind, prevHash, datTime, dataIn, nonce);
                 blockchain >> hash;
                 if (block.sHash != hash) {
+                    QMessageBox messageBox;
+                    messageBox.critical(0,"Error", "Hash inconsistency at block " + QString::number(ind) + "\n");
                     cerr << "Hash inconsistency at block " << ind << "!" << endl;
                     exit(1);
                 }
@@ -112,7 +119,9 @@ public:
         ofstream blockchain(path);
 
         if (!blockchain) {
-//            cerr << "Can not open file!" << endl;
+            QMessageBox messageBox;
+            messageBox.critical(0,"Error",QString::fromStdString("Cannot open:\n" + path + "\n"));
+            cerr << "Can not open: " << path << " !" << endl;
             exit(1);
         }
 
