@@ -6,6 +6,9 @@
 #ifndef TESTCHAIN_BLOCKCHAIN_H
 #define TESTCHAIN_BLOCKCHAIN_H
 
+#include <QCoreApplication>
+#include <QString>
+
 #include <vector>
 #include <iostream>
 #include <fstream>
@@ -17,9 +20,12 @@ using namespace std;
 template <typename T>
 class Blockchain {
 public:
-    Blockchain(): _nDifficulty(3), _nIndex(0)
+    Blockchain(): _nDifficulty(1), _nIndex(0)
     {
-        ifstream blockchain("blockchain");
+        string path = QCoreApplication::applicationDirPath().toStdString() + "/blockchain";
+//        cout << path << endl;
+
+        ifstream blockchain(path);
 
     	if (!blockchain) {
             cerr << "Can not open file!" << endl;
@@ -81,29 +87,32 @@ public:
         blockchain.close();
     }
 
-    void addBlock(const string& info)
+    string addBlock(const string& info)
     {
         T data = info;
         Block<T> bNew(++_nIndex, data);
         bNew.sPrevHash = _getLastBlock().sHash;
-        bNew.mineBlock(_nDifficulty);
+        string hash = bNew.mineBlock(_nDifficulty);
         _vChain.push_back(bNew);
+        return hash;
     }
 
-    void addBlock(const T& data)
+    string addBlock(const T& data)
     {
         Block<T> bNew(++_nIndex, data);
         bNew.sPrevHash = _getLastBlock().sHash;
-        bNew.mineBlock(_nDifficulty);
+        string hash = bNew.mineBlock(_nDifficulty);
         _vChain.push_back(bNew);
+        return hash;
     }
 
     void save() const
     {
-        ofstream blockchain("blockchain");
+        string path = QCoreApplication::applicationDirPath().toStdString() + "/blockchain";
+        ofstream blockchain(path);
 
         if (!blockchain) {
-            cerr << "Can not open file!" << endl;
+//            cerr << "Can not open file!" << endl;
             exit(1);
         }
 

@@ -1,2 +1,4 @@
 # Blockchain
-for Revo-Gene
+for Revo-Gene  
+  
+To Compile, use Qt Creator

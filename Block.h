@@ -8,6 +8,7 @@
 
 #include <iostream>
 #include <sstream>
+#include <time.h>
 #include "sha256.h"
 
 using namespace std;
@@ -29,7 +30,7 @@ public:
         sHash = _calculateHash();
     }
 
-    void mineBlock(unsigned int nDifficulty)
+    string mineBlock(unsigned int nDifficulty)
     {
         char cstr[nDifficulty + 1];
         for (size_t i = 0; i < nDifficulty; ++i)
@@ -46,7 +47,7 @@ public:
             sHash = _calculateHash();
         }
 
-        cout << "Block mined: " << sHash << endl;
+        return sHash;
     }
 
     string _calculateHash() const
