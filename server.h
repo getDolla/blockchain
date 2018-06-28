@@ -60,6 +60,7 @@ class Server : public QDialog
 
 public:
     Server();
+    ~Server();
 
     QString getIpAddress() const {
         return ipAddress;

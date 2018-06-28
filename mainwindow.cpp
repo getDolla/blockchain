@@ -116,3 +116,8 @@ void MainWindow::on_View_clicked()
     ui->textBrowser->append(QString::fromStdString(file.getData()));
     ui->textBrowser->append("\n");
 }
+
+void MainWindow::on_Connect_clicked()
+{
+
+}

@@ -44,7 +44,7 @@
 //using namespace std;
 
 Server::Server()
-:   tcpServer(0), networkSession(0), port(0)
+:   tcpServer(nullptr), networkSession(nullptr), port(0)
 {
     QNetworkConfigurationManager manager;
     if (manager.capabilities() & QNetworkConfigurationManager::NetworkSessionRequired) {
@@ -73,6 +73,12 @@ Server::Server()
         connect(tcpServer, SIGNAL(newConnection()), this, SLOT(sendBlocks()));
     //! [3]
 }
+
+Server::~Server() {
+    delete networkSession;
+    delete tcpServer;
+}
+
 
 void Server::sessionOpened()
 {
