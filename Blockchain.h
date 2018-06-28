@@ -13,6 +13,8 @@
 #include <vector>
 #include <iostream>
 #include <fstream>
+#include <sstream>
+
 #include "Block.h"
 #include "base64.h"
 
@@ -21,6 +23,8 @@ using namespace std;
 template <typename T>
 class Blockchain {
 public:
+    string errors;
+
     Blockchain(): _nDifficulty(1), _nIndex(0)
     {
         string path = QCoreApplication::applicationDirPath().toStdString() + "/blockchain";
@@ -40,58 +44,17 @@ public:
     	// 	cout << line << endl;
     	// }
 
-        //Block attributes
-        unsigned int ind;
-        string prevHash;
-        time_t datTime;
-        T dataIn;
-        string decode64;
-        unsigned int nonce;
-
-        //for checking
-        string hash;
-
-        //gets the genesis block:
-        if (blockchain >> ind >> datTime >> decode64 >> nonce) {
-            dataIn = base64_decode(decode64);
-            // cout << "decoded: " << base64_decode(decode64) << endl;
-            // cout << "line 49: " << dataIn << endl;
-
-            Block<T> block(ind, "", datTime, dataIn, nonce);
-            blockchain >> hash;
-
-            if (block.sHash != hash) {
-                QMessageBox messageBox;
-                messageBox.critical(0,"Error","Hash inconsistency at genesis block!");
-                cerr << "Hash inconsistency at genesis block!" << endl;
-                exit(1);
-            }
-
-            _nIndex = ind;
-            _vChain.push_back(block);
-
-            //gets other blocks
-            while (blockchain >> ind >> prevHash >> datTime >> decode64 >> nonce) {
-                dataIn = base64_decode(decode64);
-
-                block = Block<T>(ind, prevHash, datTime, dataIn, nonce);
-                blockchain >> hash;
-                if (block.sHash != hash) {
-                    QMessageBox messageBox;
-                    messageBox.critical(0,"Error", "Hash inconsistency at block " + QString::number(ind) + "\n");
-                    cerr << "Hash inconsistency at block " << ind << "!" << endl;
-                    exit(1);
-                }
-
-                _nIndex = ind;
-                _vChain.push_back(block);
-            }
-        }
-        else {
-            _vChain.emplace_back(Block<T>(0, T("Genesis Block")));
-        }
+        readFromStream(blockchain);
 
         blockchain.close();
+    }
+
+    Blockchain(const QString& chainString):_nDifficulty(1), _nIndex(0) {
+        if (!chainString.isEmpty()) {
+            stringstream chainStr;
+            chainStr << chainString.toStdString();
+            readFromStream(chainStr, 0);
+        }
     }
 
     string addBlock(const string& info)
@@ -157,6 +120,72 @@ private:
     Block<T> _getLastBlock() const
     {
         return _vChain.back();
+    }
+
+    template <typename S>
+    bool readFromStream(S& chainStr, bool flag = 1) {
+        bool success = true; //doesn't fail silently
+
+        //Block attributes
+        unsigned int ind;
+        string prevHash;
+        time_t datTime;
+        T dataIn;
+        string decode64;
+        unsigned int nonce;
+
+        //for checking
+        string hash;
+
+        //gets the genesis block:
+        if (chainStr >> ind >> datTime >> decode64 >> nonce) {
+            dataIn = base64_decode(decode64);
+            // cout << "decoded: " << base64_decode(decode64) << endl;
+            // cout << "line 49: " << dataIn << endl;
+
+            Block<T> block(ind, "", datTime, dataIn, nonce);
+            chainStr >> hash;
+
+            if (block.sHash != hash) {
+                QMessageBox messageBox;
+                messageBox.critical(0,"Error","Hash inconsistency at genesis block!");
+                errors += "Hash inconsistency at genesis block!\n";
+                cerr << "Hash inconsistency at genesis block!\n";
+                success = false;
+                if (flag) {
+                    exit(1);
+                }
+            }
+
+            _nIndex = ind;
+            _vChain.push_back(block);
+
+            //gets other blocks
+            while (chainStr >> ind >> prevHash >> datTime >> decode64 >> nonce) {
+                dataIn = base64_decode(decode64);
+
+                block = Block<T>(ind, prevHash, datTime, dataIn, nonce);
+                chainStr >> hash;
+                if (block.sHash != hash) {
+                    QMessageBox messageBox;
+                    messageBox.critical(0,"Error", "Hash inconsistency at block " + QString::number(ind) + "\n");
+                    errors += "Hash inconsistency at block " + to_string(ind) + "!\n";
+                    cerr << "Hash inconsistency at block " << ind << "!" << endl;
+                    success = false;
+                    if (flag) {
+                        exit(1);
+                    }
+                }
+
+                _nIndex = ind;
+                _vChain.push_back(block);
+            }
+        }
+        else {
+            _vChain.emplace_back(Block<T>(0, T("Genesis Block")));
+            return true;
+        }
+        return success;
     }
 };
 

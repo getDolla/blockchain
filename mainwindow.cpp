@@ -6,6 +6,8 @@
 #include <QFileDialog>
 #include <QString>
 
+#include "client.h"
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow), _nIndex(0)
@@ -26,10 +28,19 @@ MainWindow::~MainWindow()
 void MainWindow::on_UpdateBlockchain_clicked()
 {
     ui->textBrowser->append("Saving Blockchain...");
+
+    ui->Connect->setEnabled(false);
+    ui->Store->setEnabled(false);
+    ui->UpdateBlockchain->setEnabled(false);
+
     bChain.save();
     ui->textBrowser->append("Done.");
 
     ui->textBrowser->append("\n");
+
+    ui->Connect->setEnabled(true);
+    ui->Store->setEnabled(true);
+    ui->UpdateBlockchain->setEnabled(true);
 }
 
 void MainWindow::on_Store_clicked()
@@ -41,19 +52,24 @@ void MainWindow::on_Store_clicked()
     if (fileName.length() == 0) {
         return;
     }
-    else if (fileName.isEmpty()) {
+
+    string name = fileName.toStdString();
+    ifstream ifs(name, ios::binary|ios::ate);
+
+    auto fileSize = ifs.tellg();
+    ifs.seekg(ios::beg);
+    string content(fileSize,0);
+    ifs.read(&content[0],fileSize);
+
+    ifs.close();
+
+    if (fileSize <= 0) {
         ui->textBrowser->append(fileName + " is empty.");
     }
     else {
-        string name = fileName.toStdString();
-        ifstream ifs(name, ios::binary|ios::ate);
-
-        auto fileSize = ifs.tellg();
-        ifs.seekg(ios::beg);
-        string content(fileSize,0);
-        ifs.read(&content[0],fileSize);
-
-        ifs.close();
+        ui->Connect->setEnabled(false);
+        ui->Store->setEnabled(false);
+        ui->UpdateBlockchain->setEnabled(false);
 
         ui->textBrowser->append(QString::fromStdString("Saving " + name + " to block...\n"));
 
@@ -63,6 +79,10 @@ void MainWindow::on_Store_clicked()
         ui->label->setText("Blockchain Length: " + QString::number(bChain.length()));
     }
     ui->textBrowser->append("\n");
+
+    ui->Connect->setEnabled(true);
+    ui->Store->setEnabled(true);
+    ui->UpdateBlockchain->setEnabled(true);
 }
 
 void MainWindow::on_Save_clicked()
@@ -72,6 +92,11 @@ void MainWindow::on_Save_clicked()
         ui->textBrowser->append("\n");
         return;
     }
+
+    ui->Connect->setEnabled(false);
+    ui->Store->setEnabled(false);
+    ui->UpdateBlockchain->setEnabled(false);
+
     _nIndex = ui->spinBox_1->value();
 
 
@@ -92,6 +117,10 @@ void MainWindow::on_Save_clicked()
 
     ui->textBrowser->append("Data successfully saved.");
     ui->textBrowser->append("\n");
+
+    ui->Connect->setEnabled(true);
+    ui->Store->setEnabled(true);
+    ui->UpdateBlockchain->setEnabled(true);
 }
 
 void MainWindow::on_View_clicked()
@@ -119,5 +148,19 @@ void MainWindow::on_View_clicked()
 
 void MainWindow::on_Connect_clicked()
 {
+    ui->Connect->setEnabled(false);
+    ui->Store->setEnabled(false);
+    ui->UpdateBlockchain->setEnabled(false);
 
+    Client client;
+    client.show();
+
+    while(client.getUpdateInfo().isEmpty()) {}
+
+    ui->textBrowser->append(client.getUpdateInfo());
+    client.close();
+
+    ui->Connect->setEnabled(true);
+    ui->Store->setEnabled(true);
+    ui->UpdateBlockchain->setEnabled(true);
 }

@@ -30,7 +30,9 @@ SOURCES += \
         mainwindow.cpp \
     base64.cpp \
     sha256.cpp \
-    server.cpp
+    server.cpp \
+    client.cpp \
+    thread.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -39,7 +41,9 @@ HEADERS += \
     Blockchain.h \
     File.h \
     sha256.h \
-    server.h
+    server.h \
+    client.h \
+    thread.h
 
 FORMS += \
         mainwindow.ui

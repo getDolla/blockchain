@@ -79,7 +79,6 @@ Server::~Server() {
     delete tcpServer;
 }
 
-
 void Server::sessionOpened()
 {
     // Save the used configuration
