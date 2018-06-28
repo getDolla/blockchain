@@ -5,6 +5,7 @@
 #-------------------------------------------------
 
 QT       += core gui
+QT       += network
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -28,7 +29,8 @@ SOURCES += \
         main.cpp \
         mainwindow.cpp \
     base64.cpp \
-    sha256.cpp
+    sha256.cpp \
+    server.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -36,7 +38,8 @@ HEADERS += \
     Block.h \
     Blockchain.h \
     File.h \
-    sha256.h
+    sha256.h \
+    server.h
 
 FORMS += \
         mainwindow.ui

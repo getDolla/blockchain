@@ -8,12 +8,13 @@
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
-    ui(new Ui::MainWindow)
+    ui(new Ui::MainWindow), _nIndex(0)
 {
     ui->setupUi(this);
 
-
     ui->label->setText("Blockchain Length: " + QString::number(bChain.length()));
+    ui->ipLabel->setText("IP Address: " + server.getIpAddress());
+    ui->portLabel->setText("Port: " + QString::number((quint16) (server.getPort())));
 }
 
 MainWindow::~MainWindow()

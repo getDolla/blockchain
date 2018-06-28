@@ -3,6 +3,7 @@
 
 #include "Blockchain.h"
 #include "File.h"
+#include "server.h"
 #include <QMainWindow>
 
 namespace Ui {
@@ -28,6 +29,7 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
+    Server server;
     Blockchain<File> bChain;
     unsigned int _nIndex;
 };
