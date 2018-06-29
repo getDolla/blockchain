@@ -15,6 +15,11 @@ using namespace std;
 
 template <typename T>
 class Block {
+    friend bool operator ==(const Block<T>& lhs, const Block<T>& rhs) {
+        return (lhs.sHash == rhs.sHash) && (lhs.sPrevHash == rhs.sPrevHash) && (lhs._nIndex == rhs._nIndex)
+                && (lhs._nNonce == rhs._nNonce) && (lhs._tTime == rhs._tTime) && (lhs._data == rhs._data);
+    }
+
 public:
     string sHash;
     string sPrevHash;
@@ -85,5 +90,10 @@ private:
     T _data;
     time_t _tTime;
 };
+
+template <typename T>
+bool operator !=(const Block<T>& lhs, const Block<T>& rhs) {
+    return !(lhs == rhs);
+}
 
 #endif //TESTCHAIN_BLOCK_H

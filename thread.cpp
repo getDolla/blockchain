@@ -96,7 +96,7 @@ void Thread::run()
         }
 //! [8] //! [9]
 
-        while (socket.bytesAvailable() < (int)sizeof(quint16)) {
+        while (socket.bytesAvailable() < (quint64)sizeof(quint64)) {
             if (!socket.waitForReadyRead(Timeout)) {
                 emit error(socket.error(), socket.errorString());
                 return;
@@ -105,7 +105,7 @@ void Thread::run()
         }
 //! [10] //! [11]
 
-        quint16 blockSize;
+        quint64 blockSize;
         QDataStream in(&socket);
         in.setVersion(QDataStream::Qt_4_0);
         in >> blockSize;

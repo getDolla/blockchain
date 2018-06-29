@@ -104,6 +104,21 @@ public:
         blockchain.close();
     }
 
+    QString equals(const Blockchain<T>& rhs) {
+        if (rhs.length() != length()) {
+            return "Length inconsistent between nodes!<br>Length of blockchain on this computer: " + QString::number(rhs.length())
+                    + "<br>Length of blockchain on connected node: " + QString::number(length());
+        }
+
+        for(size_t i = 0; i < rhs.length(); ++i) {
+            if (_vChain[i] != rhs._vChain[i]) {
+                return "Block inconsistent at index <b>" + QString::number(i) + "</b>!";
+            }
+        }
+
+        return "Blockchain is up to date with connected node :)";
+    }
+
     T viewAt(unsigned long index) {
         return _vChain[index].getData();
     }
@@ -147,12 +162,12 @@ private:
             chainStr >> hash;
 
             if (block.sHash != hash) {
-                QMessageBox messageBox;
-                messageBox.critical(0,"Error","Hash inconsistency at genesis block!");
                 errors += "Hash inconsistency at genesis block!\n";
                 cerr << "Hash inconsistency at genesis block!\n";
                 success = false;
                 if (flag) {
+                    QMessageBox messageBox;
+                    messageBox.critical(0,"Error","Hash inconsistency at genesis block!");
                     exit(1);
                 }
             }
@@ -167,12 +182,12 @@ private:
                 block = Block<T>(ind, prevHash, datTime, dataIn, nonce);
                 chainStr >> hash;
                 if (block.sHash != hash) {
-                    QMessageBox messageBox;
-                    messageBox.critical(0,"Error", "Hash inconsistency at block " + QString::number(ind) + "\n");
                     errors += "Hash inconsistency at block " + to_string(ind) + "!\n";
                     cerr << "Hash inconsistency at block " << ind << "!" << endl;
                     success = false;
                     if (flag) {
+                        QMessageBox messageBox;
+                        messageBox.critical(0,"Error", "Hash inconsistency at block " + QString::number(ind) + "\n");
                         exit(1);
                     }
                 }

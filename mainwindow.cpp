@@ -160,7 +160,7 @@ void MainWindow::on_Connect_clicked()
 
     Client client;
 
-    connect(&client, SIGNAL(newBlockchain(QString)), this, SLOT(blockChainReceived(QString)));
+    connect(&client, SIGNAL(newBlockchain(QString, Blockchain<File>)), this, SLOT(blockChainReceived(QString, Blockchain<File>)));
 
     client.exec();
 
@@ -171,7 +171,21 @@ void MainWindow::on_Connect_clicked()
     ui->UpdateBlockchain->setEnabled(true);
 }
 
-void MainWindow::blockChainReceived(const QString& blockChainText) {
+void MainWindow::blockChainReceived(const QString& blockChainText, const Blockchain<File>& otherChain) {
 //    cerr << "In MainWindow slot\n";
-    ui->textBrowser->append(blockChainText);
+    ui->textBrowser->append("Errors <b>from the client's blockchain:</b>");
+    ui->textBrowser->append("");
+
+    if (blockChainText.isEmpty()) {
+        ui->textBrowser->append("None :)");
+        ui->textBrowser->append("\n");
+        ui->textBrowser->append("Comparing this blockchain to the node's...");
+
+        ui->textBrowser->append("<b>" + bChain.equals(otherChain) + "</b>");
+    }
+    else {
+        ui->textBrowser->append(blockChainText);
+    }
+
+    ui->textBrowser->append("\n");
 }

@@ -40,11 +40,11 @@
 
 #include "client.h"
 
-#include <iostream>
-using namespace std;
+//#include <iostream>
+//using namespace std;
 
 
-Client::Client(): importedChain(QString("")),
+Client::Client():
     hostLabel(new QLabel(tr("Server name:"))), portLabel(new QLabel(tr("Server port:"))),
     button(new QPushButton(tr("Connect to Node"))), portLineEdit(new QLineEdit()),
     hostLineEdit(nullptr)
@@ -118,18 +118,15 @@ void Client::requestBlockchain()
 //! [3]
 void Client::showblockchain(const QString &nextblockchain)
 {
-//    importedChain = nextblockchain;
-       blockChainText = nextblockchain;
-//       cerr << "In showblockchain\n";
-//       cerr << blockChainText.toStdString() << endl;
+    Blockchain<File> importedChain = nextblockchain;
 
-       emit newBlockchain(blockChainText);
+
+//       cerr << "In showblockchain\n";
+//       cerr << nextblockchain.toStdString() << endl;
+
+    emit newBlockchain(QString::fromStdString(importedChain.errors), importedChain);
 }
 //! [4]
-
-QString Client::getUpdateInfo() const {
-    return blockChainText;
-}
 
 void Client::displayError(int socketError, const QString &message)
 {

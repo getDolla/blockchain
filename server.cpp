@@ -37,10 +37,9 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include <stdlib.h>
 #include "server.h"
 
-#include <iostream>
+//#include <iostream>
 using namespace std;
 
 Server::Server()
@@ -133,14 +132,33 @@ void Server::sendBlocks()
     out.setVersion(QDataStream::Qt_4_0);
 //! [4] //! [6]
 
-    QString packet = "Hello World!";
+    string path = QCoreApplication::applicationDirPath().toStdString() + "/blockchain";
+//        cerr << path << endl;
 
-    out << (quint16)0;
-    out << packet;
+    ifstream otherChain(path, ios::binary|ios::ate);
+
+    if (!otherChain) {
+        QMessageBox messageBox;
+        messageBox.critical(0,"Error",QString::fromStdString("Cannot open:\n" + path + "\n"));
+        cerr << "Can not open: " << path << " !" << endl;
+        exit(1);
+    }
+
+    auto fileSize = otherChain.tellg();
+    otherChain.seekg(ios::beg);
+    string content(fileSize,0);
+    otherChain.read(&content[0],fileSize);
+
+    otherChain.close();
+
+//    cerr << content << endl;
+
+    out << (quint64)0;
+    out << QString::fromStdString(content);
     out.device()->seek(0);
-    out << (quint16)(block.size() - sizeof(quint16));
+    out << (quint64)(block.size() - sizeof(quint64));
 
-//    cerr << (quint16)(block.size() - sizeof(quint16)) << endl;
+//    cerr << (quint64)(block.size() - sizeof(quint64)) << endl;
 //! [6] //! [7]
 
     QTcpSocket *clientConnection = tcpServer->nextPendingConnection();

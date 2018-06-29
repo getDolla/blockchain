@@ -46,6 +46,9 @@
 #include <QMessageBox>
 #include <QString>
 
+#include <fstream>
+#include <string>
+#include <iostream>
 #include <stdlib.h>
 
 QT_BEGIN_NAMESPACE

@@ -60,10 +60,8 @@ public:
     Client();
     ~Client();
 
-    QString getUpdateInfo() const;
-
 signals:
-    void newBlockchain(const QString& blockchain);
+    void newBlockchain(const QString& messages, const Blockchain<File>& otherChain);
 
 private slots:
     void requestBlockchain();
@@ -73,8 +71,6 @@ private slots:
 
 private:
     Thread thread;
-    Blockchain<File> importedChain;
-    QString blockChainText;
 
     QLabel *hostLabel;
     QLabel *portLabel;

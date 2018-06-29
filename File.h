@@ -8,6 +8,10 @@
 using namespace std;
 
 class File {
+    friend bool operator ==(const File& lhs, const File& rhs) {
+        return (lhs.filename == rhs.filename) && (lhs.data == rhs.data);
+    }
+
 private:
     string filename;
     string data;
