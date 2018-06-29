@@ -41,7 +41,7 @@
 #ifndef CLIENT_H
 #define CLIENT_H
 
-#include <QWidget>
+#include <QDialog>
 #include <QtWidgets>
 #include <QtNetwork>
 #include <QString>
@@ -52,7 +52,7 @@
 #include "File.h"
 
 //! [0]
-class Client : public QWidget
+class Client : public QDialog
 {
     Q_OBJECT
 
@@ -61,6 +61,9 @@ public:
     ~Client();
 
     QString getUpdateInfo() const;
+
+signals:
+    void newBlockchain(const QString& blockchain);
 
 private slots:
     void requestBlockchain();

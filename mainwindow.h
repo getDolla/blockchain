@@ -29,6 +29,8 @@ private slots:
 
     void on_Connect_clicked();
 
+    void Blockchain_received(const QString& blockChainText);
+
 private:
     Ui::MainWindow *ui;
     Server server;

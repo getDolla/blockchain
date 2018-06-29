@@ -65,6 +65,7 @@ Client::Client(): importedChain(QString("")),
         ipAddress = QHostAddress(QHostAddress::LocalHost).toString();
 
     hostLineEdit = new QLineEdit(ipAddress);
+    portLineEdit->setValidator(new QIntValidator(1, 65535, this));
     button->setEnabled(false);
 
     QGridLayout *mainLayout = new QGridLayout;
@@ -92,10 +93,11 @@ Client::Client(): importedChain(QString("")),
             this, SLOT(displayError(int,QString)));
 //! [1]
 
+//    cerr << "In client constructor\n";
 }
 
 Client::~Client() {
-    cout << "In destructor..." << endl;
+//    cerr << "In destructor..." << endl;
     delete hostLabel;
     delete portLabel;
     delete button;
@@ -118,6 +120,10 @@ void Client::showblockchain(const QString &nextblockchain)
 {
 //    importedChain = nextblockchain;
        blockChainText = nextblockchain;
+//       cerr << "In showblockchain\n";
+       cerr << blockChainText.toStdString() << endl;
+
+       emit newBlockchain(blockChainText);
 }
 //! [4]
 

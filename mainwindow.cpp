@@ -106,17 +106,21 @@ void MainWindow::on_Save_clicked()
     string filename = (file.getFileName() != "") ? file.getFileName() :
                       (QCoreApplication::applicationDirPath().toStdString() + to_string(_nIndex) + ".txt");
 
-    string otherFile = QFileDialog::getSaveFileName(this,
-            tr("Save Address Book"), QString::fromStdString(filename),
-            tr("All Files (*)")).toStdString();
+    QString selectedFile = QFileDialog::getSaveFileName(this,
+                                                        tr("Save Address Book"), QString::fromStdString(filename),
+                                                        tr("All Files (*)"));
 
-    ofstream ofs(otherFile);
-    ui->textBrowser->append(QString::fromStdString("Saving data from " + filename + " to " + filename + " ...\n"));
-    ofs << file.getData();
-    ofs.close();
+    if (!selectedFile.isEmpty()) {
+        string otherFile = selectedFile.toStdString();
 
-    ui->textBrowser->append("Data successfully saved.");
-    ui->textBrowser->append("\n");
+        ofstream ofs(otherFile);
+        ui->textBrowser->append(QString::fromStdString("Saving data from " + filename + " to " + filename + " ...\n"));
+        ofs << file.getData();
+        ofs.close();
+
+        ui->textBrowser->append("Data successfully saved.");
+        ui->textBrowser->append("\n");
+    }
 
     ui->Connect->setEnabled(true);
     ui->Store->setEnabled(true);
@@ -152,15 +156,22 @@ void MainWindow::on_Connect_clicked()
     ui->Store->setEnabled(false);
     ui->UpdateBlockchain->setEnabled(false);
 
+//    cerr << "creating client\n";
+
     Client client;
-    client.show();
 
-    while(client.getUpdateInfo().isEmpty()) {}
+    connect(&client, SIGNAL(newBlockchain(QString)), this, SLOT(Blockchain_received(QString)));
 
-    ui->textBrowser->append(client.getUpdateInfo());
-    client.close();
+    client.exec();
+
+//    while(client.getUpdateInfo().isEmpty()) { cerr << "in while loop\n"; }
 
     ui->Connect->setEnabled(true);
     ui->Store->setEnabled(true);
     ui->UpdateBlockchain->setEnabled(true);
+}
+
+void MainWindow::Blockchain_received(const QString& blockChainText) {
+//    cerr << "In MainWindow slot\n";
+    ui->textBrowser->append("blockChainText");
 }
