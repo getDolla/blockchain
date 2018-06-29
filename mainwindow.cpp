@@ -160,7 +160,7 @@ void MainWindow::on_Connect_clicked()
 
     Client client;
 
-    connect(&client, SIGNAL(newBlockchain(QString)), this, SLOT(Blockchain_received(QString)));
+    connect(&client, SIGNAL(newBlockchain(QString)), this, SLOT(blockChainReceived(QString)));
 
     client.exec();
 
@@ -171,7 +171,7 @@ void MainWindow::on_Connect_clicked()
     ui->UpdateBlockchain->setEnabled(true);
 }
 
-void MainWindow::Blockchain_received(const QString& blockChainText) {
+void MainWindow::blockChainReceived(const QString& blockChainText) {
 //    cerr << "In MainWindow slot\n";
-    ui->textBrowser->append("blockChainText");
+    ui->textBrowser->append(blockChainText);
 }

@@ -121,7 +121,7 @@ void Client::showblockchain(const QString &nextblockchain)
 //    importedChain = nextblockchain;
        blockChainText = nextblockchain;
 //       cerr << "In showblockchain\n";
-       cerr << blockChainText.toStdString() << endl;
+//       cerr << blockChainText.toStdString() << endl;
 
        emit newBlockchain(blockChainText);
 }

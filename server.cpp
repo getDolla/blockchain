@@ -38,10 +38,10 @@
 **
 ****************************************************************************/
 #include <stdlib.h>
-//#include <iostream>
 #include "server.h"
 
-//using namespace std;
+#include <iostream>
+using namespace std;
 
 Server::Server()
 :   tcpServer(nullptr), networkSession(nullptr), port(0)
@@ -132,10 +132,15 @@ void Server::sendBlocks()
     QDataStream out(&block, QIODevice::WriteOnly);
     out.setVersion(QDataStream::Qt_4_0);
 //! [4] //! [6]
+
+    QString packet = "Hello World!";
+
     out << (quint16)0;
-    out << "Hello World!";
+    out << packet;
     out.device()->seek(0);
     out << (quint16)(block.size() - sizeof(quint16));
+
+//    cerr << (quint16)(block.size() - sizeof(quint16)) << endl;
 //! [6] //! [7]
 
     QTcpSocket *clientConnection = tcpServer->nextPendingConnection();
