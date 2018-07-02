@@ -52,6 +52,7 @@ public:
     }
 
     Blockchain(const QByteArray& chainString):_nDifficulty(2), _nIndex(0) {
+//        cerr << "In blockchain 2nd constr\n";
         if (!chainString.isEmpty()) {
             QTextStream chainStr(chainString);
             readFromStream(chainStr, 0);
