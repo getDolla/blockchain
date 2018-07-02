@@ -132,29 +132,24 @@ void Server::sendBlocks()
     out.setVersion(QDataStream::Qt_4_0);
 //! [4] //! [6]
 
-    string path = QCoreApplication::applicationDirPath().toStdString() + "/blockchain";
-//        cerr << path << endl;
+    QString path = QCoreApplication::applicationDirPath() + "/blockchain";
 
-    ifstream otherChain(path, ios::binary|ios::ate);
+    QFile ifs(path);
 
-    if (!otherChain) {
+    if (!ifs.open(QIODevice::ReadOnly)) {
         QMessageBox messageBox;
-        messageBox.critical(0,"Error",QString::fromStdString("Cannot open:\n" + path + "\n"));
-        cerr << "Can not open: " << path << " !" << endl;
+        messageBox.critical(0,"Error",("Cannot open:\n" + path + "\n"));
+//        cerr << "Can not open: " << path << " !" << endl;
         exit(1);
     }
 
-    auto fileSize = otherChain.tellg();
-    otherChain.seekg(ios::beg);
-    string content(fileSize,0);
-    otherChain.read(&content[0],fileSize);
-
-    otherChain.close();
+    QByteArray content = ifs.readAll();
+    ifs.close();
 
 //    cerr << content << endl;
 
     out << (quint64)0;
-    out << QString::fromStdString(content);
+    out << content;
     out.device()->seek(0);
     out << (quint64)(block.size() - sizeof(quint64));
 

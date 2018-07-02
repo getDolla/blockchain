@@ -9,33 +9,34 @@
 #include <QCoreApplication>
 #include <QString>
 #include <QMessageBox>
+#include <QByteArray>
+#include <QTextStream>
+#include <QFile>
 
 #include <vector>
-#include <iostream>
-#include <fstream>
-#include <sstream>
 
 #include "Block.h"
-#include "base64.h"
 
+//#include <iostream>
+//#include <string>
 using namespace std;
 
 template <typename T>
 class Blockchain {
 public:
-    string errors;
+    QString errors;
 
-    Blockchain(): _nDifficulty(1), _nIndex(0)
+    Blockchain(): _nDifficulty(2), _nIndex(0)
     {
-        string path = QCoreApplication::applicationDirPath().toStdString() + "/blockchain";
+        QString path = QCoreApplication::applicationDirPath() + "/blockchain";
 //        cout << path << endl;
 
-        ifstream blockchain(path);
+        QFile blockchain(path);
 
-    	if (!blockchain) {
+        if (!blockchain.open(QIODevice::ReadOnly)) {
             QMessageBox messageBox;
-            messageBox.critical(0,"Error",QString::fromStdString("Cannot open:\n" + path + "\n"));
-            cerr << "Can not open: " << path << " !" << endl;
+            messageBox.critical(0,"Error",("Cannot open:\n" + path + "\n"));
+//            cerr << "Can not open: " << path.toStdString() << " !" << endl;
             exit(1);
         }
 
@@ -44,61 +45,65 @@ public:
     	// 	cout << line << endl;
     	// }
 
-        readFromStream(blockchain);
+        QTextStream blockStr(&blockchain);
+        readFromStream(blockStr);
 
         blockchain.close();
     }
 
-    Blockchain(const QString& chainString):_nDifficulty(1), _nIndex(0) {
+    Blockchain(const QByteArray& chainString):_nDifficulty(2), _nIndex(0) {
         if (!chainString.isEmpty()) {
-            stringstream chainStr;
-            chainStr << chainString.toStdString();
+            QTextStream chainStr(chainString);
             readFromStream(chainStr, 0);
         }
     }
 
-    string addBlock(const string& info)
+    QString addBlock(const QByteArray& info)
     {
         T data = info;
         Block<T> bNew(++_nIndex, data);
-        bNew.sPrevHash = _getLastBlock().sHash;
-        string hash = bNew.mineBlock(_nDifficulty);
+        bNew.sPrevHash = _vChain.back().sHash;
+        QString hash = bNew.mineBlock(_nDifficulty);
         _vChain.push_back(bNew);
         return hash;
     }
 
-    string addBlock(const T& data)
+    QString addBlock(const T& data)
     {
         Block<T> bNew(++_nIndex, data);
-        bNew.sPrevHash = _getLastBlock().sHash;
-        string hash = bNew.mineBlock(_nDifficulty);
+        bNew.sPrevHash = _vChain.back().sHash;
+        QString hash = bNew.mineBlock(_nDifficulty);
         _vChain.push_back(bNew);
         return hash;
     }
 
     void save() const
     {
-        string path = QCoreApplication::applicationDirPath().toStdString() + "/blockchain";
-        ofstream blockchain(path);
+        QString path = QCoreApplication::applicationDirPath() + "/blockchain";
+        QFile blockchain(path);
 
-        if (!blockchain) {
+        if (!blockchain.open(QIODevice::WriteOnly)) {
             QMessageBox messageBox;
-            messageBox.critical(0,"Error",QString::fromStdString("Cannot open:\n" + path + "\n"));
-            cerr << "Can not open: " << path << " !" << endl;
+            messageBox.critical(0,"Error",("Cannot open:\n" + path + "\n"));
+//            cerr << "Can not open: " << path << " !" << endl;
             exit(1);
         }
 
+        QTextStream blockStr(&blockchain);
+
         for(Block<T> block : _vChain) {
-            blockchain << block.getIndex() << " ";
-            blockchain << block.sPrevHash << " ";
-            blockchain << block.getDatTime() << " ";
+            blockStr << block.getIndex() << " ";
+//            cerr << block.getIndex() << endl;
+            blockStr << block.sPrevHash << " ";
+//            cerr << block.sPrevHash.toStdString() << endl;
+            blockStr << ((quint64) block.getDatTime()) << " ";
+//            cerr << ((quint64) block.getDatTime()) << endl;
 
-            string encode64 = (string) block.getData();
-            encode64 = base64_encode(encode64, encode64.length());
-
-            blockchain << encode64 << " ";
-            blockchain << block.getNonce() << " ";
-            blockchain << block.sHash << "\n";
+            blockStr << ((QByteArray) block.getData()).toBase64() << " ";
+            blockStr << block.getNonce() << " ";
+//            cerr << block.getNonce() << endl;
+            blockStr << block.sHash << "\n";
+//            cerr << block.sHash.toStdString() << endl;
         }
 
         blockchain.close();
@@ -132,38 +137,35 @@ private:
     unsigned long _nIndex;
     vector<Block<T>> _vChain;
 
-    Block<T> _getLastBlock() const
-    {
-        return _vChain.back();
-    }
-
     template <typename S>
     bool readFromStream(S& chainStr, bool flag = 1) {
         bool success = true; //doesn't fail silently
 
         //Block attributes
         unsigned int ind;
-        string prevHash;
-        time_t datTime;
-        T dataIn;
-        string decode64;
+        QString prevHash;
+        quint64 datTime;
+        QByteArray decode64;
         unsigned int nonce;
 
         //for checking
-        string hash;
+        QString hash;
 
         //gets the genesis block:
-        if (chainStr >> ind >> datTime >> decode64 >> nonce) {
-            dataIn = base64_decode(decode64);
+        if(!(chainStr >> ind >> datTime >> decode64 >> nonce).atEnd()) {
+            T dataIn = (QByteArray::fromBase64(decode64));
             // cout << "decoded: " << base64_decode(decode64) << endl;
             // cout << "line 49: " << dataIn << endl;
 
-            Block<T> block(ind, "", datTime, dataIn, nonce);
+            Block<T> block(ind, prevHash, datTime, dataIn, nonce);
             chainStr >> hash;
 
             if (block.sHash != hash) {
                 errors += "Hash inconsistency at genesis block!\n";
-                cerr << "Hash inconsistency at genesis block!\n";
+//                cerr << ind << endl;
+//                cerr << block.getDatTime() << endl;
+//                cerr << nonce << endl;
+//                cerr << block.sHash.toStdString() << "\n" << hash.toStdString() << endl;
                 success = false;
                 if (flag) {
                     QMessageBox messageBox;
@@ -176,14 +178,19 @@ private:
             _vChain.push_back(block);
 
             //gets other blocks
-            while (chainStr >> ind >> prevHash >> datTime >> decode64 >> nonce) {
-                dataIn = base64_decode(decode64);
+            while (!(chainStr >> ind >> prevHash >> datTime >> decode64 >> nonce).atEnd()) {
+                T dataIn = (QByteArray::fromBase64(decode64));
 
                 block = Block<T>(ind, prevHash, datTime, dataIn, nonce);
                 chainStr >> hash;
                 if (block.sHash != hash) {
-                    errors += "Hash inconsistency at block " + to_string(ind) + "!\n";
-                    cerr << "Hash inconsistency at block " << ind << "!" << endl;
+                    errors += "Hash inconsistency at block " + QString::number(ind) + "!\n";
+//                    cerr << "Hash inconsistency at block " << ind << "!" << endl;
+//                    cerr << ind << endl;
+//                    cerr << block.sPrevHash.toStdString() << endl;
+//                                    cerr << block.getDatTime() << endl;
+//                                    cerr << nonce << endl;
+//                                    cerr << block.sHash.toStdString() << "\n" << hash.toStdString() << endl;
                     success = false;
                     if (flag) {
                         QMessageBox messageBox;
@@ -197,7 +204,7 @@ private:
             }
         }
         else {
-            _vChain.emplace_back(Block<T>(0, T("Genesis Block")));
+            _vChain.emplace_back(Block<T>(0, T(QByteArray("Genesis Block"))));
             return true;
         }
         return success;

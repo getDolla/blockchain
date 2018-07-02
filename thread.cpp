@@ -121,7 +121,7 @@ void Thread::run()
 //! [13] //! [14]
 
         mutex.lock();
-        QString blockchain;
+        QByteArray blockchain;
         in >> blockchain;
         emit newBlockchain(blockchain);
 //! [7] //! [14] //! [15]

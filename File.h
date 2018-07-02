@@ -1,11 +1,12 @@
 #ifndef FILE_H
 #define FILE_H
 
-#include <iostream>
-#include <fstream>
-#include <string>
+#include <QString>
+#include <QByteArray>
+#include <QDataStream>
 
-using namespace std;
+//#include <iostream>
+//using namespace std;
 
 class File {
     friend bool operator ==(const File& lhs, const File& rhs) {
@@ -13,46 +14,50 @@ class File {
     }
 
 private:
-    string filename;
-    string data;
+    QString filename;
+    QByteArray data;
 
 public:
-    friend ostream& operator<<(ostream& os, const File& rhs) {
-        os << rhs.filename << ":\n";
-        os << rhs.data << endl;
-        return os;
+    operator QByteArray() const {
+        QByteArray temp;
+        temp.append("NAME: ");
+        temp.append(filename.toUtf8());
+        temp.append(" DATA: ");
+        return temp += data;
     }
 
-    operator string() const {
-        return "NAME: " + filename + " DATA: " + data;
-    }
-
-    File& operator=(const string& rhs) {
-        size_t foundName = rhs.find("NAME: ");
-        size_t foundData = rhs.find(" DATA: ");
-        if ((foundName != string::npos) && (foundName == 0) && (foundData - 6 > 0)) {
-            filename = rhs.substr(6, foundData - 6);
+    File& operator=(const QByteArray& rhs) {
+        int foundName = rhs.indexOf("NAME: ");
+        int foundData = rhs.indexOf(" DATA: ");
+        if ((foundName == 0) && (foundData - 6 > 0)) {
+            for(size_t i = 6; i < foundData; ++i) {
+                filename += rhs[i];
+            }
         }
-        if (foundData != string::npos) {
-            data = rhs.substr(foundData + 7);
+        if (foundData >= 0) {
+            for(size_t i = foundData + 7; i < rhs.length(); ++i) {
+                data += rhs[i];
+            }
         }
         else {
             data = rhs;
         }
 
-        // cout << foundName << endl;
-        // cout << foundData << endl;
-        // cout << filename << endl;
-        // cout << data << endl;
+//         cout << foundName << endl;
+//         cout << foundData << endl;
+//         cerr << "Filename: " << filename.toStdString() << endl;
+//         cerr << "Data: " << data.toStdString() << endl;
 
         return *this;
     }
 
     File() {}
-    File(const string& content): data(content) {}
-    File(const string& name, const string& content): filename(name), data(content) {}
+    File(const QByteArray& content) {
+        operator=(content);
+    }
+    File(const QString& name, const QByteArray& content): filename(name), data(content) {}
 
-    string getFileName() const { return filename; }
-    string getData() const { return data; }
+    QString getFileName() const { return filename; }
+    QByteArray getData() const { return data; }
 };
 #endif

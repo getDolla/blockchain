@@ -53,17 +53,12 @@ void MainWindow::on_Store_clicked()
         return;
     }
 
-    string name = fileName.toStdString();
-    ifstream ifs(name, ios::binary|ios::ate);
-
-    auto fileSize = ifs.tellg();
-    ifs.seekg(ios::beg);
-    string content(fileSize,0);
-    ifs.read(&content[0],fileSize);
-
+    QFile ifs(fileName);
+    ifs.open(QIODevice::ReadOnly);
+    QByteArray content = ifs.readAll();
     ifs.close();
 
-    if (fileSize <= 0) {
+    if (content.isEmpty()) {
         ui->textBrowser->append(fileName + " is empty.");
     }
     else {
@@ -71,10 +66,10 @@ void MainWindow::on_Store_clicked()
         ui->Store->setEnabled(false);
         ui->UpdateBlockchain->setEnabled(false);
 
-        ui->textBrowser->append(QString::fromStdString("Saving " + name + " to block...\n"));
+        ui->textBrowser->append("Saving " + fileName + " to block...\n");
 
-        string hash = bChain.addBlock(File(name, content));
-        ui->textBrowser->append(QString::fromStdString("Block mined: " + hash + "\n"));
+        QString hash = bChain.addBlock(File(fileName, content));
+        ui->textBrowser->append("Block mined: " + hash + "\n");
 
         ui->label->setText("Blockchain Length: " + QString::number(bChain.length()));
     }
@@ -103,19 +98,18 @@ void MainWindow::on_Save_clicked()
     ui->textBrowser->append("Index " + QString::number(_nIndex) + " selected.\n");
 
     File file = bChain.viewAt(_nIndex);
-    string filename = (file.getFileName() != "") ? file.getFileName() :
-                      (QCoreApplication::applicationDirPath().toStdString() + to_string(_nIndex) + ".txt");
+    QString fileName = (file.getFileName() != "") ? file.getFileName() :
+                      (QString::number(_nIndex) + ".txt");
 
     QString selectedFile = QFileDialog::getSaveFileName(this,
-                                                        tr("Save Address Book"), QString::fromStdString(filename),
+                                                        tr("Save Address Book"), fileName,
                                                         tr("All Files (*)"));
 
     if (!selectedFile.isEmpty()) {
-        string otherFile = selectedFile.toStdString();
-
-        ofstream ofs(otherFile);
-        ui->textBrowser->append(QString::fromStdString("Saving data from " + filename + " to " + filename + " ...\n"));
-        ofs << file.getData();
+        QFile ofs(selectedFile);
+        ofs.open(QIODevice::WriteOnly);
+        ui->textBrowser->append("Saving data from " + fileName + " to " + selectedFile + " ...\n");
+        ofs.write(file.getData());
         ofs.close();
 
         ui->textBrowser->append("Data successfully saved.");
@@ -142,11 +136,11 @@ void MainWindow::on_View_clicked()
 
     if (file.getFileName() != "") {
         ui->textBrowser->append("Filename:");
-        ui->textBrowser->append(QString::fromStdString(file.getFileName()+":\n"));
+        ui->textBrowser->append(file.getFileName()+":\n");
     }
 
     ui->textBrowser->append("Data:");
-    ui->textBrowser->append(QString::fromStdString(file.getData()));
+    ui->textBrowser->append(QString(file.getData()));
     ui->textBrowser->append("\n");
 }
 

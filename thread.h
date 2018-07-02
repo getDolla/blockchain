@@ -45,6 +45,7 @@
 #include <QMutex>
 #include <QWaitCondition>
 #include <QtNetwork>
+#include <QByteArray>
 
 //! [0]
 class Thread : public QThread
@@ -59,7 +60,7 @@ public:
     void run();
 
 signals:
-    void newBlockchain(const QString &blockchain);
+    void newBlockchain(const QByteArray &blockchain);
     void error(int socketError, const QString &message);
 
 private:

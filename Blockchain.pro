@@ -29,19 +29,15 @@ QMAKE_LFLAGS = -static
 SOURCES += \
         main.cpp \
         mainwindow.cpp \
-    base64.cpp \
-    sha256.cpp \
     server.cpp \
     client.cpp \
     thread.cpp
 
 HEADERS += \
         mainwindow.h \
-    base64.h \
     Block.h \
     Blockchain.h \
     File.h \
-    sha256.h \
     server.h \
     client.h \
     thread.h

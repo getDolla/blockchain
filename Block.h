@@ -6,10 +6,12 @@
 #ifndef TESTCHAIN_BLOCK_H
 #define TESTCHAIN_BLOCK_H
 
-#include <iostream>
-#include <sstream>
-#include <time.h>
-#include "sha256.h"
+#include <QDataStream>
+#include <QString>
+#include <QByteArray>
+#include <QCryptographicHash>
+
+#include <ctime>
 
 using namespace std;
 
@@ -21,21 +23,21 @@ class Block {
     }
 
 public:
-    string sHash;
-    string sPrevHash;
+    QString sHash;
+    QString sPrevHash;
 
-    Block(unsigned int nIndexIn, const T& dataIn) : _nIndex(nIndexIn), _data(dataIn), _nNonce(0), _tTime(time(nullptr))
+    Block(unsigned int nIndexIn, const T& dataIn) : _nIndex(nIndexIn), _data(dataIn), _nNonce(0), _tTime(time(0))
     {
         sHash = _calculateHash();
     }
 
-    Block(unsigned int ind, const string& prevHash, const time_t& datTime, const T& dataIn, unsigned int nonce) :
+    Block(unsigned int ind, const QString& prevHash, const quint64& datTime, const T& dataIn, unsigned int nonce) :
     _nIndex(ind), sPrevHash(prevHash), _data(dataIn), _nNonce(nonce), _tTime(datTime)
     {
         sHash = _calculateHash();
     }
 
-    string mineBlock(unsigned int nDifficulty)
+    QString mineBlock(unsigned int nDifficulty)
     {
         char cstr[nDifficulty + 1];
         for (size_t i = 0; i < nDifficulty; ++i)
@@ -44,9 +46,9 @@ public:
         }
         cstr[nDifficulty] = '\0';
 
-        string str(cstr);
+        QString str(cstr);
 
-        while (sHash.substr(0, nDifficulty) != str)
+        while (sHash.left(nDifficulty) != str)
         {
             ++_nNonce;
             sHash = _calculateHash();
@@ -55,12 +57,13 @@ public:
         return sHash;
     }
 
-    string _calculateHash() const
+    QString _calculateHash() const
     {
-        stringstream ss;
-        ss << _nIndex << sPrevHash << _tTime << _data << _nNonce;
+        QByteArray toHash;
+        QDataStream bytestr(&toHash, QIODevice::WriteOnly);
+        bytestr << _nIndex << sPrevHash << QString::fromStdString(to_string(_tTime)) << _data << _nNonce;
 
-        return sha256(ss.str());
+        return QString(QCryptographicHash::hash(toHash, QCryptographicHash::Sha3_512).toHex());
     }
 
 

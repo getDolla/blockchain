@@ -86,7 +86,7 @@ Client::Client():
             this, SLOT(enableButton()));
 
 //! [0]
-    connect(&thread, SIGNAL(newBlockchain(QString)),
+    connect(&thread, SIGNAL(newBlockchain(QByteArray)),
             this, SLOT(showblockchain(QString)));
 //! [0] //! [1]
     connect(&thread, SIGNAL(error(int,QString)),
@@ -116,7 +116,7 @@ void Client::requestBlockchain()
 //! [2]
 
 //! [3]
-void Client::showblockchain(const QString &nextblockchain)
+void Client::showblockchain(const QByteArray &nextblockchain)
 {
     Blockchain<File> importedChain = nextblockchain;
 
@@ -124,7 +124,7 @@ void Client::showblockchain(const QString &nextblockchain)
 //       cerr << "In showblockchain\n";
 //       cerr << nextblockchain.toStdString() << endl;
 
-    emit newBlockchain(QString::fromStdString(importedChain.errors), importedChain);
+    emit newBlockchain(importedChain.errors, importedChain);
 }
 //! [4]
 

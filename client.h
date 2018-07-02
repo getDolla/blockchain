@@ -45,6 +45,7 @@
 #include <QtWidgets>
 #include <QtNetwork>
 #include <QString>
+#include <QByteArray>
 
 #include "thread.h"
 
@@ -65,7 +66,7 @@ signals:
 
 private slots:
     void requestBlockchain();
-    void showblockchain(const QString &blockchain);
+    void showblockchain(const QByteArray &blockchain);
     void displayError(int socketError, const QString &message);
     void enableButton();
 
