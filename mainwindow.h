@@ -1,14 +1,30 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include <QFile>
+#include <QMessageBox>
+#include <QDataStream>
+#include <QFileDialog>
+#include <QString>
+#include <QMainWindow>
+
+#include <vector>
+
+#include "client.h"
 #include "Blockchain.h"
 #include "File.h"
 #include "server.h"
-#include <QMainWindow>
+
+using namespace std;
 
 namespace Ui {
 class MainWindow;
 }
+
+struct Connection {
+    QString ipAddr;
+    quint16 portAddr;
+};
 
 class MainWindow : public QMainWindow
 {
@@ -35,6 +51,7 @@ private:
     Ui::MainWindow *ui;
     Server server;
     Blockchain<File> bChain;
+    vector<Connection> savedConnections;
     unsigned int _nIndex;
 };
 

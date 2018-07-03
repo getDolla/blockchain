@@ -114,15 +114,23 @@ public:
     }
 
     QString equals(const Blockchain<T>& rhs) {
-        if (rhs.length() != length()) {
-            return "Length inconsistent between nodes!<br>Length of blockchain on this computer: " + QString::number(rhs.length())
+        if (rhs.length() < length()) {
+            return "ERROR: Length of blockchain on connected node is shorter!<br>Length of blockchain on this computer: " + QString::number(rhs.length())
                     + "<br>Length of blockchain on connected node: " + QString::number(length());
         }
 
-        for(size_t i = 0; i < rhs.length(); ++i) {
+        for(size_t i = 0; i < length(); ++i) {
             if (_vChain[i] != rhs._vChain[i]) {
                 return "Block inconsistent at index <b>" + QString::number(i) + "</b>!";
             }
+        }
+
+        if (rhs.length() > length()) {
+            for(size_t i = length(); i < rhs.length(); ++i) {
+                _vChain.push_back(rhs._vChain[i]);
+            }
+
+            return "Blockchain synced with connected node. Length: " + QString::number(length());
         }
 
         return "Blockchain is up to date with connected node :)";

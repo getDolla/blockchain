@@ -1,12 +1,5 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include <QFile>
-#include <QMessageBox>
-#include <QDataStream>
-#include <QFileDialog>
-#include <QString>
-
-#include "client.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -83,8 +76,8 @@ void MainWindow::on_Store_clicked()
 void MainWindow::on_Save_clicked()
 {
     if (ui->spinBox_1->value() >= bChain.length()) {
-        ui->textBrowser->append("Index cannot be greater than the length of the blockchain!");
-        ui->textBrowser->append("\n");
+        ui->textBrowser->append("<b>Index cannot be greater than the length of the blockchain!</b>");
+        ui->textBrowser->append("");
         return;
     }
 
@@ -124,8 +117,8 @@ void MainWindow::on_Save_clicked()
 void MainWindow::on_View_clicked()
 {
     if (ui->spinBox_2->value() >= bChain.length()) {
-        ui->textBrowser->append("Index cannot be greater than the length of the blockchain!");
-        ui->textBrowser->append("\n");
+        ui->textBrowser->append("<b>Index cannot be greater than the length of the blockchain!</b>");
+        ui->textBrowser->append("");
         return;
     }
     _nIndex = ui->spinBox_2->value();
@@ -135,11 +128,11 @@ void MainWindow::on_View_clicked()
     File file = bChain.viewAt(_nIndex);
 
     if (file.getFileName() != "") {
-        ui->textBrowser->append("Filename:");
+        ui->textBrowser->append("<b>Filename:</b>");
         ui->textBrowser->append(file.getFileName()+":\n");
     }
 
-    ui->textBrowser->append("Data:");
+    ui->textBrowser->append("<b>Data:</b>");
     ui->textBrowser->append(QString(file.getData()));
     ui->textBrowser->append("\n");
 }
