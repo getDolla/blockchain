@@ -43,14 +43,22 @@
 
 #include <QDialog>
 #include <QtWidgets>
+#include <QTextBrowser>
 #include <QtNetwork>
 #include <QString>
 #include <QByteArray>
+
+#include <vector>
 
 #include "thread.h"
 
 #include "Blockchain.h"
 #include "File.h"
+
+struct Connection {
+    QString ipAddr;
+    quint16 portAddr;
+};
 
 //! [0]
 class Client : public QDialog
@@ -58,11 +66,12 @@ class Client : public QDialog
     Q_OBJECT
 
 public:
-    Client();
+    Client(const std::vector<Connection>& connections);
     ~Client();
 
 signals:
     void newBlockchain(const QString& messages, const Blockchain<File>& otherChain);
+    void addConnection(const QString& ip, quint16 port);
 
 private slots:
     void requestBlockchain();
@@ -78,6 +87,7 @@ private:
     QLineEdit *hostLineEdit;
     QLineEdit *portLineEdit;
     QPushButton *button;
+    QTextBrowser* hostList;
 };
 //! [0]
 

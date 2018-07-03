@@ -21,10 +21,7 @@ namespace Ui {
 class MainWindow;
 }
 
-struct Connection {
-    QString ipAddr;
-    quint16 portAddr;
-};
+struct Connection;
 
 class MainWindow : public QMainWindow
 {
@@ -47,11 +44,13 @@ private slots:
 
     void blockChainReceived(const QString& blockChainText, const Blockchain<File>& otherChain);
 
+    void saveConnection(const QString& ip, quint16 port);
+
 private:
     Ui::MainWindow *ui;
     Server server;
     Blockchain<File> bChain;
-    vector<Connection> savedConnections;
+    vector<Connection> hostLists;
     unsigned int _nIndex;
 };
 

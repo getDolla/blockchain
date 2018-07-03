@@ -145,9 +145,10 @@ void MainWindow::on_Connect_clicked()
 
 //    cerr << "creating client\n";
 
-    Client client;
+    Client client(hostLists);
 
     connect(&client, SIGNAL(newBlockchain(QString, Blockchain<File>)), this, SLOT(blockChainReceived(QString, Blockchain<File>)));
+    connect(&client, SIGNAL(addConnection(QString, quint16)), this, SLOT(saveConnection(QString, quint16)));
 
     client.exec();
 
@@ -175,4 +176,8 @@ void MainWindow::blockChainReceived(const QString& blockChainText, const Blockch
     }
 
     ui->textBrowser->append("\n");
+}
+
+void MainWindow::saveConnection(const QString& ip, quint16 port) {
+
 }

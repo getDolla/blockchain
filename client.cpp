@@ -44,10 +44,10 @@
 //using namespace std;
 
 
-Client::Client():
+Client::Client(const vector<Connection>& connections):
     hostLabel(new QLabel(tr("Server name:"))), portLabel(new QLabel(tr("Server port:"))),
     button(new QPushButton(tr("Connect to Node"))), portLineEdit(new QLineEdit()),
-    hostLineEdit(nullptr)
+    hostList(new QTextBrowser()), hostLineEdit(nullptr)
 {
     // find out which IP to connect to
     QString ipAddress;
@@ -69,15 +69,18 @@ Client::Client():
     button->setEnabled(false);
 
     QGridLayout *mainLayout = new QGridLayout;
-    mainLayout->addWidget(hostLabel, 0, 0);
-    mainLayout->addWidget(hostLineEdit, 0, 1);
-    mainLayout->addWidget(portLabel, 1, 0);
-    mainLayout->addWidget(portLineEdit, 1, 1);
-    mainLayout->addWidget(button, 3, 0, 1, 2);
+    mainLayout->addWidget(hostList, 0, 0, 2, 0);
+    mainLayout->addWidget(hostLabel, 2, 0);
+    mainLayout->addWidget(hostLineEdit, 2, 1);
+    mainLayout->addWidget(portLabel, 3, 0);
+    mainLayout->addWidget(portLineEdit, 3, 1);
+    mainLayout->addWidget(button, 5, 0, 1, 2);
     setLayout(mainLayout);
 
     setWindowTitle(tr("Blockchain Client"));
     portLineEdit->setFocus();
+
+    hostList->append("Hello World!");
 
     connect(button, SIGNAL(clicked()), this, SLOT(requestBlockchain()));
     connect(hostLineEdit, SIGNAL(textChanged(QString)),
