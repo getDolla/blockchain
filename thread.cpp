@@ -133,3 +133,11 @@ void Thread::run()
     }
 //! [15]
 }
+
+QString Thread::getHost() const {
+    return hostName;
+}
+
+quint16 Thread::getPort() const {
+    return port;
+}

@@ -31,6 +31,9 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
+signals:
+    void addNewHost(const vector<Connection>& hosts);
+
 private slots:
     void on_UpdateBlockchain_clicked();
 

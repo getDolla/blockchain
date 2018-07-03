@@ -52,6 +52,7 @@
 #include <vector>
 
 #include "thread.h"
+#include "mainwindow.h"
 
 #include "Blockchain.h"
 #include "File.h"
@@ -59,6 +60,8 @@
 struct Connection {
     QString ipAddr;
     quint16 portAddr;
+
+    Connection(const QString& ip, quint16 port): ipAddr(ip), portAddr(port) {}
 };
 
 //! [0]
@@ -66,8 +69,9 @@ class Client : public QDialog
 {
     Q_OBJECT
 
+    friend class MainWindow;
 public:
-    Client(const std::vector<Connection>& connections);
+    Client(const vector<Connection>& connections);
     ~Client();
 
 signals:
@@ -79,6 +83,7 @@ private slots:
     void showblockchain(const QByteArray &blockchain);
     void displayError(int socketError, const QString &message);
     void enableButton();
+    void updateServerLists(const vector<Connection>& hosts);
 
 private:
     Thread thread;

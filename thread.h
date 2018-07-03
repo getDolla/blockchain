@@ -46,6 +46,7 @@
 #include <QWaitCondition>
 #include <QtNetwork>
 #include <QByteArray>
+#include <QString>
 
 //! [0]
 class Thread : public QThread
@@ -58,6 +59,9 @@ public:
 
     void requestBlockchain(const QString &hostName, quint16 port);
     void run();
+
+    QString getHost() const;
+    quint16 getPort() const;
 
 signals:
     void newBlockchain(const QByteArray &blockchain);

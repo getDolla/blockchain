@@ -41,7 +41,7 @@
 #include "client.h"
 
 //#include <iostream>
-//using namespace std;
+using namespace std;
 
 
 Client::Client(const vector<Connection>& connections):
@@ -129,6 +129,8 @@ void Client::requestBlockchain()
 //! [3]
 void Client::showblockchain(const QByteArray &nextblockchain)
 {
+    emit addConnection(thread.getHost(), thread.getPort());
+
 //    cerr << "In show blockchain\n";
     Blockchain<File> importedChain = nextblockchain;
 
@@ -166,4 +168,11 @@ void Client::enableButton()
 {
     bool enable(!hostLineEdit->text().isEmpty() && !portLineEdit->text().isEmpty());
     button->setEnabled(enable);
+}
+
+void Client::updateServerLists(const std::vector<Connection>& hosts) {
+    hostList->clear();
+    for(const Connection& c : hosts) {
+        hostList->append("<b>IP Address:</b> " + c.ipAddr + "<br><b>Port:</b> " + QString::number((quint16) c.portAddr) + "<br>");
+    }
 }

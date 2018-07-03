@@ -145,16 +145,11 @@ void MainWindow::on_Connect_clicked()
 
 //    cerr << "creating client\n";
 
-    Connection connect4;
-    connect4.ipAddr = "10.208.57.234";
-    connect4.portAddr = 61650;
-
-    connections.push_back(connect4);
-
     Client client(connections);
 
     connect(&client, SIGNAL(newBlockchain(QString, Blockchain<File>)), this, SLOT(blockChainReceived(QString, Blockchain<File>)));
     connect(&client, SIGNAL(addConnection(QString, quint16)), this, SLOT(saveConnection(QString, quint16)));
+    connect(this, SIGNAL(addNewHost(vector<Connection>)), &client, SLOT(updateServerLists(vector<Connection>)));
 
     client.exec();
 
@@ -185,5 +180,12 @@ void MainWindow::blockChainReceived(const QString& blockChainText, const Blockch
 }
 
 void MainWindow::saveConnection(const QString& ip, quint16 port) {
+    for(const Connection& c : connections) {
+        if ((ip == c.ipAddr) && (port == c.portAddr)) {
+            return;
+        }
+    }
 
+    connections.push_back(Connection(ip, port));
+    emit addNewHost(connections);
 }
