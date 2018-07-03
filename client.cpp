@@ -45,9 +45,9 @@
 
 
 Client::Client(const vector<Connection>& connections):
-    hostLabel(new QLabel(tr("Server name:"))), portLabel(new QLabel(tr("Server port:"))),
+    hostLabel(new QLabel(tr("Server Name:"))), portLabel(new QLabel(tr("Server Port:"))),
     button(new QPushButton(tr("Connect to Node"))), portLineEdit(new QLineEdit()),
-    hostList(new QTextBrowser()), hostLineEdit(nullptr)
+    hostList(new QTextBrowser()), listLabel(new QLabel("Connected Servers:")), hostLineEdit(nullptr)
 {
     // find out which IP to connect to
     QString ipAddress;
@@ -64,23 +64,29 @@ Client::Client(const vector<Connection>& connections):
     if (ipAddress.isEmpty())
         ipAddress = QHostAddress(QHostAddress::LocalHost).toString();
 
+//    QFont font("MS Shell Dlg", 9);
+    setFont(QFont("MS Shell Dlg", 9));
+
     hostLineEdit = new QLineEdit(ipAddress);
     portLineEdit->setValidator(new QIntValidator(1, 65535, this));
     button->setEnabled(false);
 
     QGridLayout *mainLayout = new QGridLayout;
-    mainLayout->addWidget(hostList, 0, 0, 2, 0);
-    mainLayout->addWidget(hostLabel, 2, 0);
-    mainLayout->addWidget(hostLineEdit, 2, 1);
-    mainLayout->addWidget(portLabel, 3, 0);
-    mainLayout->addWidget(portLineEdit, 3, 1);
-    mainLayout->addWidget(button, 5, 0, 1, 2);
+    mainLayout->addWidget(listLabel, 0, 0);
+    mainLayout->addWidget(hostList, 1, 0, 2, 0);
+    mainLayout->addWidget(hostLabel, 3, 0);
+    mainLayout->addWidget(hostLineEdit, 3, 1);
+    mainLayout->addWidget(portLabel, 4, 0);
+    mainLayout->addWidget(portLineEdit, 4, 1);
+    mainLayout->addWidget(button, 6, 0, 1, 2);
     setLayout(mainLayout);
 
     setWindowTitle(tr("Blockchain Client"));
     portLineEdit->setFocus();
 
-    hostList->append("Hello World!");
+    for(const Connection& c : connections) {
+        hostList->append("<b>IP Address:</b> " + c.ipAddr + "<br><b>Port:</b> " + QString::number((quint16) c.portAddr) + "<br>");
+    }
 
     connect(button, SIGNAL(clicked()), this, SLOT(requestBlockchain()));
     connect(hostLineEdit, SIGNAL(textChanged(QString)),
@@ -106,6 +112,8 @@ Client::~Client() {
     delete button;
     delete hostLineEdit;
     delete portLineEdit;
+    delete hostList;
+    delete listLabel;
     close();
 }
 

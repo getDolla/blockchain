@@ -145,7 +145,13 @@ void MainWindow::on_Connect_clicked()
 
 //    cerr << "creating client\n";
 
-    Client client(hostLists);
+    Connection connect4;
+    connect4.ipAddr = "10.208.57.234";
+    connect4.portAddr = 61650;
+
+    connections.push_back(connect4);
+
+    Client client(connections);
 
     connect(&client, SIGNAL(newBlockchain(QString, Blockchain<File>)), this, SLOT(blockChainReceived(QString, Blockchain<File>)));
     connect(&client, SIGNAL(addConnection(QString, quint16)), this, SLOT(saveConnection(QString, quint16)));

@@ -43,6 +43,7 @@
 
 #include <QDialog>
 #include <QtWidgets>
+#include <QFont>
 #include <QTextBrowser>
 #include <QtNetwork>
 #include <QString>
@@ -88,6 +89,7 @@ private:
     QLineEdit *portLineEdit;
     QPushButton *button;
     QTextBrowser* hostList;
+    QLabel* listLabel;
 };
 //! [0]
 

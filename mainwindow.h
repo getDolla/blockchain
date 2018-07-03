@@ -50,7 +50,7 @@ private:
     Ui::MainWindow *ui;
     Server server;
     Blockchain<File> bChain;
-    vector<Connection> hostLists;
+    vector<Connection> connections;
     unsigned int _nIndex;
 };
 
