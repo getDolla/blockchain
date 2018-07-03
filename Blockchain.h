@@ -100,7 +100,10 @@ public:
             blockStr << ((quint64) block.getDatTime()) << " ";
 //            cerr << ((quint64) block.getDatTime()) << endl;
 
+//            string data_str = ((QByteArray) block.getData()).data();
+//            blockStr << base64_encode(data_str, data_str.length()).c_str() << " ";
             blockStr << ((QByteArray) block.getData()).toBase64() << " ";
+
             blockStr << block.getNonce() << " ";
 //            cerr << block.getNonce() << endl;
             blockStr << block.sHash << "\n";
@@ -154,6 +157,7 @@ private:
 
         //gets the genesis block:
         if(!(chainStr >> ind >> datTime >> decode64 >> nonce).atEnd()) {
+//            T dataIn = (QByteArray(base64_decode(decode64.data()).c_str()));
             T dataIn = (QByteArray::fromBase64(decode64));
             // cout << "decoded: " << base64_decode(decode64) << endl;
             // cout << "line 49: " << dataIn << endl;
@@ -180,6 +184,8 @@ private:
 
             //gets other blocks
             while (!(chainStr >> ind >> prevHash >> datTime >> decode64 >> nonce).atEnd()) {
+//                cerr << decode64.toStdString() << endl;
+//                T dataIn = (QByteArray(base64_decode(decode64.data()).c_str()));
                 T dataIn = (QByteArray::fromBase64(decode64));
 
                 block = Block<T>(ind, prevHash, datTime, dataIn, nonce);
