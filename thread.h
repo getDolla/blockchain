@@ -48,7 +48,6 @@
 #include <QByteArray>
 #include <QString>
 
-//! [0]
 class Thread : public QThread
 {
     Q_OBJECT
@@ -74,6 +73,5 @@ private:
     QWaitCondition cond;
     bool quit;
 };
-//! [0]
 
 #endif

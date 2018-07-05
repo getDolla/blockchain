@@ -45,7 +45,6 @@ Thread::Thread(QObject *parent)
 {
 }
 
-//! [0]
 Thread::~Thread()
 {
     mutex.lock();
@@ -54,84 +53,66 @@ Thread::~Thread()
     mutex.unlock();
     wait();
 }
-//! [0]
 
-//! [1] //! [2]
 void Thread::requestBlockchain(const QString &hostName, quint16 port)
 {
-//! [1]
     QMutexLocker locker(&mutex);
     this->hostName = hostName;
     this->port = port;
-//! [3]
+
     if (!isRunning())
         start();
     else
         cond.wakeOne();
 }
-//! [2] //! [3]
 
-//! [4]
 void Thread::run()
 {
     mutex.lock();
-//! [4] //! [5]
     QString serverName = hostName;
     quint16 serverPort = port;
     mutex.unlock();
-//! [5]
 
-//! [6]
     while (!quit) {
-//! [7]
         const int Timeout = 5 * 1000;
 
         QTcpSocket socket;
         socket.connectToHost(serverName, serverPort);
-//! [6] //! [8]
 
         if (!socket.waitForConnected(Timeout)) {
             emit error(socket.error(), socket.errorString());
             return;
         }
-//! [8] //! [9]
 
         while (socket.bytesAvailable() < (quint64)sizeof(quint64)) {
             if (!socket.waitForReadyRead(Timeout)) {
                 emit error(socket.error(), socket.errorString());
                 return;
             }
-//! [9] //! [10]
         }
-//! [10] //! [11]
 
         quint64 blockSize;
         QDataStream in(&socket);
         in.setVersion(QDataStream::Qt_4_0);
         in >> blockSize;
-//! [11] //! [12]
 
         while (socket.bytesAvailable() < blockSize) {
             if (!socket.waitForReadyRead(Timeout)) {
                 emit error(socket.error(), socket.errorString());
                 return;
             }
-//! [12] //! [13]
         }
-//! [13] //! [14]
 
         mutex.lock();
         QByteArray blockchain;
         in >> blockchain;
         emit newBlockchain(blockchain);
-//! [7] //! [14] //! [15]
 
         cond.wait(&mutex);
         serverName = hostName;
         serverPort = port;
         mutex.unlock();
     }
-//! [15]
 }
 
 QString Thread::getHost() const {

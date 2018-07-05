@@ -46,21 +46,21 @@
 #include <QMessageBox>
 #include <QString>
 
+#include "Blockchain.h"
+#include "File.h"
+
 //#include <iostream>
 #include <stdlib.h>
 
-QT_BEGIN_NAMESPACE
-class QTcpServer;
-class QNetworkSession;
-QT_END_NAMESPACE
+struct Connection;
 
-//! [0]
 class Server : public QDialog
 {
     Q_OBJECT
 
+     friend class MainWindow;
 public:
-    Server();
+    Server(Blockchain<File>* chainPtr, vector<Connection>* connecPtr);
     ~Server();
 
     QString getIpAddress() const {
@@ -71,16 +71,27 @@ public:
         return port;
     }
 
+signals:
+    void updateTextBrowser(const QString& updates);
+    void addConnection(const QString& ip, quint16 port);
+    void error(int socketError, const QString &message);
+
 private slots:
     void sessionOpened();
-    void sendBlocks();
+    void handleConnection();
+    void readBlocks();
 
 private:
     QTcpServer *tcpServer;
     QNetworkSession *networkSession;
+
+    Blockchain<File>* blockChainPtr;
+    vector<Connection>* connectionsPtr;
+
     QString ipAddress;
     qint16 port;
+
+    void sendBlocks(QTcpSocket* socket, qint8 mode, QByteArray& message);
 };
-//! [0]
 
 #endif

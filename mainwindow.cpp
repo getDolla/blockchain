@@ -2,19 +2,25 @@
 #include "ui_mainwindow.h"
 
 MainWindow::MainWindow(QWidget *parent) :
-    QMainWindow(parent),
-    ui(new Ui::MainWindow), _nIndex(0)
+    QMainWindow(parent), ui(new Ui::MainWindow),
+    bChain(new Blockchain<File>()), server(bChain, &connections), _nIndex(0)
 {
     ui->setupUi(this);
 
-    ui->label->setText("Blockchain Length: " + QString::number(bChain.length()));
+    ui->label->setText("Blockchain Length: " + QString::number(bChain->length()));
     ui->ipLabel->setText("IP Address: " + server.getIpAddress());
     ui->portLabel->setText("Port: " + QString::number((quint16) (server.getPort())));
+
+    connect(&server, SIGNAL(addConnection(QString,quint16)), this, SLOT(saveConnection(QString,quint16)));
+    connect(&server, SIGNAL(updateTextBrowser(QString)), this, SLOT(addText(QString)));
+    connect(&server, SIGNAL(error(int,QString)),
+            this, SLOT(displayError(int,QString)));
 }
 
 MainWindow::~MainWindow()
 {
     on_UpdateBlockchain_clicked();
+    delete bChain;
     delete ui;
 }
 
@@ -26,7 +32,7 @@ void MainWindow::on_UpdateBlockchain_clicked()
     ui->Store->setEnabled(false);
     ui->UpdateBlockchain->setEnabled(false);
 
-    bChain.save();
+    bChain->save();
     ui->textBrowser->append("Done.");
 
     ui->textBrowser->append("\n");
@@ -61,10 +67,10 @@ void MainWindow::on_Store_clicked()
 
         ui->textBrowser->append("Saving " + fileName + " to block...\n");
 
-        QString hash = bChain.addBlock(File(fileName, content));
+        QString hash = bChain->addBlock(File(fileName, content));
         ui->textBrowser->append("Block mined: " + hash + "\n");
 
-        ui->label->setText("Blockchain Length: " + QString::number(bChain.length()));
+        ui->label->setText("Blockchain Length: " + QString::number(bChain->length()));
     }
     ui->textBrowser->append("\n");
 
@@ -75,7 +81,7 @@ void MainWindow::on_Store_clicked()
 
 void MainWindow::on_Save_clicked()
 {
-    if (ui->spinBox_1->value() >= bChain.length()) {
+    if (ui->spinBox_1->value() >= bChain->length()) {
         ui->textBrowser->append("<b>Index cannot be greater than the length of the blockchain!</b>");
         ui->textBrowser->append("");
         return;
@@ -90,7 +96,7 @@ void MainWindow::on_Save_clicked()
 
     ui->textBrowser->append("Index " + QString::number(_nIndex) + " selected.\n");
 
-    File file = bChain.viewAt(_nIndex);
+    File file = bChain->viewAt(_nIndex);
     QString fileName = (file.getFileName() != "") ? file.getFileName() :
                       (QString::number(_nIndex) + ".txt");
 
@@ -116,7 +122,7 @@ void MainWindow::on_Save_clicked()
 
 void MainWindow::on_View_clicked()
 {
-    if (ui->spinBox_2->value() >= bChain.length()) {
+    if (ui->spinBox_2->value() >= bChain->length()) {
         ui->textBrowser->append("<b>Index cannot be greater than the length of the blockchain!</b>");
         ui->textBrowser->append("");
         return;
@@ -125,7 +131,7 @@ void MainWindow::on_View_clicked()
 
 
     ui->textBrowser->append("Index " + QString::number(_nIndex) + " selected.\n");
-    File file = bChain.viewAt(_nIndex);
+    File file = bChain->viewAt(_nIndex);
 
     if (file.getFileName() != "") {
         ui->textBrowser->append("<b>Filename:</b>");
@@ -149,6 +155,7 @@ void MainWindow::on_Connect_clicked()
 
     connect(&client, SIGNAL(newBlockchain(QString, Blockchain<File>)), this, SLOT(blockChainReceived(QString, Blockchain<File>)));
     connect(&client, SIGNAL(addConnection(QString, quint16)), this, SLOT(saveConnection(QString, quint16)));
+    connect(&client, SIGNAL(updateTextBrowser(QString)), this, SLOT(addText(QString)));
     connect(this, SIGNAL(addNewHost(vector<Connection>)), &client, SLOT(updateServerLists(vector<Connection>)));
 
     client.exec();
@@ -162,7 +169,7 @@ void MainWindow::on_Connect_clicked()
 
 void MainWindow::blockChainReceived(const QString& blockChainText, const Blockchain<File>& otherChain) {
 //    cerr << "In MainWindow slot\n";
-    ui->textBrowser->append("Errors <b>from the client's blockchain:</b>");
+    ui->textBrowser->append("There were errors <b>from the connected node:</b>");
     ui->textBrowser->append("");
 
     if (blockChainText.isEmpty()) {
@@ -170,7 +177,7 @@ void MainWindow::blockChainReceived(const QString& blockChainText, const Blockch
         ui->textBrowser->append("\n");
         ui->textBrowser->append("Comparing this blockchain to the node's...");
 
-        ui->textBrowser->append("<b>" + bChain.equals(otherChain) + "</b>");
+        ui->textBrowser->append("<b>" + bChain->equals(otherChain) + "</b>");
     }
     else {
         ui->textBrowser->append(blockChainText);
@@ -188,4 +195,25 @@ void MainWindow::saveConnection(const QString& ip, quint16 port) {
 
     connections.push_back(Connection(ip, port));
     emit addNewHost(connections);
+}
+
+void MainWindow::addText(const QString& updates) {
+    ui->textBrowser->append(updates);
+}
+
+void MainWindow::displayError(int socketError, const QString &message)
+{
+    switch (socketError) {
+    case QAbstractSocket::HostNotFoundError:
+        ui->textBrowser->append("Node attempted to connect... Please check the host and port settings.");
+        break;
+    case QAbstractSocket::ConnectionRefusedError:
+        ui->textBrowser->append("The connection was refused by the peer. "
+                                    "Make sure the blockchain server is running, "
+                                    "and check that the host name and port "
+                                    "settings are correct.");
+        break;
+    default:
+        ui->textBrowser->append("The following error occurred: " + message);
+    }
 }

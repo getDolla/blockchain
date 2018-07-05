@@ -12,6 +12,9 @@
 #include <QByteArray>
 #include <QTextStream>
 #include <QFile>
+#include <QCryptographicHash>
+#include <QMutexLocker>
+#include <QMutex>
 
 #include <vector>
 
@@ -24,8 +27,6 @@ using namespace std;
 template <typename T>
 class Blockchain {
 public:
-    QString errors;
-
     Blockchain(): _nDifficulty(2), _nIndex(0)
     {
         QString path = QCoreApplication::applicationDirPath() + "/blockchain";
@@ -59,14 +60,14 @@ public:
         }
     }
 
-    QString addBlock(const QByteArray& info)
-    {
-        T data = info;
-        Block<T> bNew(++_nIndex, data);
-        bNew.sPrevHash = _vChain.back().sHash;
-        QString hash = bNew.mineBlock(_nDifficulty);
-        _vChain.push_back(bNew);
-        return hash;
+    Blockchain& operator =(const Blockchain& rhs) {
+        if (this != &rhs) {
+            _nDifficulty = rhs._nDifficulty;
+            _nIndex = rhs._nIndex;
+            errors = rhs.errors;
+            _vChain = rhs._vChain;
+        }
+        return *this;
     }
 
     QString addBlock(const T& data)
@@ -75,40 +76,92 @@ public:
         bNew.sPrevHash = _vChain.back().sHash;
         QString hash = bNew.mineBlock(_nDifficulty);
         _vChain.push_back(bNew);
+        save(_nIndex);
         return hash;
     }
 
-    void save() const
+    bool addBlocks(const QByteArray& text) {
+        QTextStream blockStr(text);
+
+        //Block attributes
+        unsigned int ind;
+        QString prevHash;
+        quint64 datTime;
+        QByteArray decode64;
+        unsigned int nonce;
+
+        size_t counter = 0;
+
+        //for checking
+        QString hash;
+
+        //gets the genesis block:
+        while (!(blockStr >> ind >> prevHash >> datTime >> decode64 >> nonce).atEnd()) {
+            if (ind != _nIndex) {
+                T dataIn = (QByteArray::fromBase64(decode64));
+                // cout << "decoded: " << base64_decode(decode64) << endl;
+
+                Block<T> block(ind, prevHash, datTime, dataIn, nonce);
+                blockStr >> hash;
+
+                if (block.sHash != hash) {
+                    errors += "Hash inconsistency at block " + QString::number(ind) + "!\n";
+                    save(_vChain.size() - counter);
+                    return false;
+                }
+
+                _nIndex = ind;
+                _vChain.push_back(block);
+                ++counter;
+            }
+        }
+
+        save(_vChain.size() - counter);
+        return true;
+    }
+
+    void save(size_t start = 0) const
     {
         QString path = QCoreApplication::applicationDirPath() + "/blockchain";
         QFile blockchain(path);
 
-        if (!blockchain.open(QIODevice::WriteOnly)) {
-            QMessageBox messageBox;
-            messageBox.critical(0,"Error",("Cannot open:\n" + path + "\n"));
-//            cerr << "Can not open: " << path << " !" << endl;
-            exit(1);
+        if (start == 0) {
+            if (!blockchain.open(QIODevice::WriteOnly)) {
+                QMessageBox messageBox;
+                messageBox.critical(0,"Error",("Cannot open:\n" + path + "\n"));
+    //            cerr << "Can not open: " << path << " !" << endl;
+                exit(1);
+            }
+        }
+        else {
+            if (!blockchain.open(QIODevice::Append)) {
+                QMessageBox messageBox;
+                messageBox.critical(0,"Error",("Cannot open:\n" + path + "\n"));
+    //            cerr << "Can not open: " << path << " !" << endl;
+                exit(1);
+            }
         }
 
         QTextStream blockStr(&blockchain);
 
-        for(Block<T> block : _vChain) {
-            blockStr << block.getIndex() << " ";
-//            cerr << block.getIndex() << endl;
-            blockStr << block.sPrevHash << " ";
-//            cerr << block.sPrevHash.toStdString() << endl;
-            blockStr << ((quint64) block.getDatTime()) << " ";
-//            cerr << ((quint64) block.getDatTime()) << endl;
+        for(size_t i = start; i < _vChain.size(); ++i) {
+            const Block<T>* block = &_vChain[i];
+            blockStr << block->getIndex() << " ";
+    //            cerr << block.getIndex() << endl;
+            blockStr << block->sPrevHash << " ";
+    //            cerr << block.sPrevHash.toStdString() << endl;
+            blockStr << ((quint64) block->getDatTime()) << " ";
+    //            cerr << ((quint64) block.getDatTime()) << endl;
 
-//            string data_str = ((QByteArray) block.getData()).data();
-//            blockStr << base64_encode(data_str, data_str.length()).c_str() << " ";
-            blockStr << ((QByteArray) block.getData()).toBase64() << " ";
+    //            string data_str = ((QByteArray) block.getData()).data();
+    //            blockStr << base64_encode(data_str, data_str.length()).c_str() << " ";
+            blockStr << ((QByteArray) block->getData()).toBase64() << " ";
 
-            blockStr << block.getNonce() << " ";
-//            cerr << block.getNonce() << endl;
-            blockStr << block.sHash << "\n";
-//            cerr << block.sHash.toStdString() << endl;
-        }
+            blockStr << block->getNonce() << " ";
+    //            cerr << block.getNonce() << endl;
+            blockStr << block->sHash << "\n";
+    //            cerr << block.sHash.toStdString() << endl;
+        }        
 
         blockchain.close();
     }
@@ -144,15 +197,39 @@ public:
         return _vChain.size();
     }
 
+    QString getErrors() {
+        QString copy = errors;
+        errors.clear();
+        return copy;
+    }
+
+    QByteArray hash() const {
+        QString path = QCoreApplication::applicationDirPath() + "/blockchain";
+//        cout << path << endl;
+
+        QFile ifs(path);
+
+        if (!ifs.open(QIODevice::ReadOnly)) {
+            QMessageBox messageBox;
+            messageBox.critical(0,"Error",("Cannot open:\n" + path + "\n"));
+//            cerr << "Can not open: " << path.toStdString() << " !" << endl;
+            exit(1);
+        }
+
+        QByteArray content = ifs.readAll();
+        ifs.close();
+
+        return QCryptographicHash::hash(content, QCryptographicHash::Sha3_512).toHex();
+    }
+
 private:
     unsigned int _nDifficulty;
     unsigned long _nIndex;
+    QString errors;
     vector<Block<T>> _vChain;
 
     template <typename S>
-    bool readFromStream(S& chainStr, bool flag = 1) {
-        bool success = true; //doesn't fail silently
-
+    bool readFromStream(S& chainStr, bool flag = true) {
         //Block attributes
         unsigned int ind;
         QString prevHash;
@@ -179,12 +256,14 @@ private:
 //                cerr << block.getDatTime() << endl;
 //                cerr << nonce << endl;
 //                cerr << block.sHash.toStdString() << "\n" << hash.toStdString() << endl;
-                success = false;
+
                 if (flag) {
                     QMessageBox messageBox;
                     messageBox.critical(0,"Error","Hash inconsistency at genesis block!");
                     exit(1);
                 }
+
+                return false;
             }
 
             _nIndex = ind;
@@ -192,37 +271,42 @@ private:
 
             //gets other blocks
             while (!(chainStr >> ind >> prevHash >> datTime >> decode64 >> nonce).atEnd()) {
-//                cerr << decode64.toStdString() << endl;
-//                T dataIn = (QByteArray(base64_decode(decode64.data()).c_str()));
-                T dataIn = (QByteArray::fromBase64(decode64));
+                if (ind != _nIndex) {
+    //                cerr << decode64.toStdString() << endl;
+    //                T dataIn = (QByteArray(base64_decode(decode64.data()).c_str()));
+                    T dataIn = (QByteArray::fromBase64(decode64));
 
-                block = Block<T>(ind, prevHash, datTime, dataIn, nonce);
-                chainStr >> hash;
-                if (block.sHash != hash) {
-                    errors += "Hash inconsistency at block " + QString::number(ind) + "!\n";
-//                    cerr << "Hash inconsistency at block " << ind << "!" << endl;
-//                    cerr << ind << endl;
-//                    cerr << block.sPrevHash.toStdString() << endl;
-//                                    cerr << block.getDatTime() << endl;
-//                                    cerr << nonce << endl;
-//                                    cerr << block.sHash.toStdString() << "\n" << hash.toStdString() << endl;
-                    success = false;
-                    if (flag) {
-                        QMessageBox messageBox;
-                        messageBox.critical(0,"Error", "Hash inconsistency at block " + QString::number(ind) + "\n");
-                        exit(1);
+                    block = Block<T>(ind, prevHash, datTime, dataIn, nonce);
+                    chainStr >> hash;
+                    if (block.sHash != hash) {
+                        errors += "Hash inconsistency at block " + QString::number(ind) + "!\n";
+    //                    cerr << "Hash inconsistency at block " << ind << "!" << endl;
+    //                    cerr << ind << endl;
+    //                    cerr << block.sPrevHash.toStdString() << endl;
+    //                                    cerr << block.getDatTime() << endl;
+    //                                    cerr << nonce << endl;
+    //                                    cerr << block.sHash.toStdString() << "\n" << hash.toStdString() << endl;
+
+                        if (flag) {
+                            QMessageBox messageBox;
+                            messageBox.critical(0,"Error", "Hash inconsistency at block " + QString::number(ind) + "\n");
+                            exit(1);
+                        }
+
+                        return false;
                     }
-                }
 
-                _nIndex = ind;
-                _vChain.push_back(block);
+                    _nIndex = ind;
+                    _vChain.push_back(block);
+                }
             }
         }
         else {
             _vChain.emplace_back(Block<T>(0, T(QByteArray("Genesis Block"))));
             return true;
         }
-        return success;
+
+        return true;
     }
 };
 

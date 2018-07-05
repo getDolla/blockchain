@@ -42,8 +42,8 @@
 //#include <iostream>
 using namespace std;
 
-Server::Server()
-:   tcpServer(nullptr), networkSession(nullptr), port(0)
+Server::Server(Blockchain<File> *chainPtr, vector<Connection> *connecPtr)
+:  blockChainPtr(chainPtr), connectionsPtr(connecPtr), tcpServer(nullptr), networkSession(nullptr), port(0)
 {
     QNetworkConfigurationManager manager;
     if (manager.capabilities() & QNetworkConfigurationManager::NetworkSessionRequired) {
@@ -68,9 +68,7 @@ Server::Server()
         sessionOpened();
     }
 
-    //! [3]
-        connect(tcpServer, SIGNAL(newConnection()), this, SLOT(sendBlocks()));
-    //! [3]
+    connect(tcpServer, SIGNAL(newConnection()), this, SLOT(handleConnection()));
 }
 
 Server::~Server() {
@@ -95,7 +93,6 @@ void Server::sessionOpened()
         settings.endGroup();
     }
 
-//! [0] //! [1]
     tcpServer = new QTcpServer(this);
     if (!tcpServer->listen()) {
         QMessageBox::critical(0, tr("Blockchain Server"),
@@ -104,7 +101,7 @@ void Server::sessionOpened()
         close();
         return;
     }
-//! [0]
+
     QList<QHostAddress> ipAddressesList = QNetworkInterface::allAddresses();
     // use the first non-localhost IPv4 address
     for (int i = 0; i < ipAddressesList.size(); ++i) {
@@ -120,49 +117,141 @@ void Server::sessionOpened()
 
     port = tcpServer->serverPort();
 //    cout << ipAddress.toStdString() << " port: " << port << endl;
-//! [1]
 }
 
-//! [4]
-void Server::sendBlocks()
-{
-//! [5]
-    QByteArray block;
-    QDataStream out(&block, QIODevice::WriteOnly);
-    out.setVersion(QDataStream::Qt_4_0);
-//! [4] //! [6]
+void Server::handleConnection() {
+    while (tcpServer->hasPendingConnections())
+        {
+            QTcpSocket* socket = tcpServer->nextPendingConnection();
+            connect(socket, SIGNAL(readyRead()), this, SLOT(readBlocks()));
+            connect(socket, SIGNAL(disconnected()), socket, SLOT(deleteLater()));
+        }
+}
 
-    QString path = QCoreApplication::applicationDirPath() + "/blockchain";
+void Server::readBlocks() {
+    QTcpSocket* socket = static_cast<QTcpSocket*>(sender());
+    const int Timeout = 5 * 1000;
 
-    QFile ifs(path);
+    emit addConnection(socket->peerAddress().toString(), socket->peerPort());
 
-    if (!ifs.open(QIODevice::ReadOnly)) {
-        QMessageBox messageBox;
-        messageBox.critical(0,"Error",("Cannot open:\n" + path + "\n"));
-//        cerr << "Can not open: " << path << " !" << endl;
-        exit(1);
+    QString text = "Connected to:<br>";
+    text += "<b>IP Address:</b> " + socket->peerAddress().toString() + "<br><b>Port:</b> ";
+    text += QString::number((quint16) socket->peerPort()) + "<br>";
+
+    emit updateTextBrowser(text);
+
+    while (socket->bytesAvailable() < (quint64)sizeof(quint64)) {
+        if (!(socket->waitForReadyRead(Timeout))) {
+            emit error(socket->error(), socket->errorString());
+            return;
+        }
     }
 
-    QByteArray content = ifs.readAll();
-    ifs.close();
+    quint64 blockSize;
+    QDataStream in(socket);
+    in >> blockSize;
 
-//    cerr << content << endl;
+    while (socket->bytesAvailable() < blockSize) {
+        if (!(socket->waitForReadyRead(Timeout))) {
+            emit error(socket->error(), socket->errorString());
+            return;
+        }
+    }
 
-    out << (quint64)0;
-    out << content;
+    qint8 mode;
+    in >> mode;
+    QByteArray content;
+
+    /* there are 5 modes FROM CLIENT (all NON-negative):
+     * 0 : client blockchain is broken -> server sends its blockchain
+     * 1 : client wants server hash -> server sends its hash
+     * 2 : client is sending hash -> server compares (sends all good if everything matches, else its blockchain)
+     * 3 : client is sending blocks -> new blocks added, server appends to end of blockchain and sends its hash
+     * 4 : client is sending entire blockchain -> server checks sent blockchain for errors and compares it to other nodes (if all good, uses that blockchain)
+    */
+
+    if (mode > 1) {
+        QByteArray packet;
+        in >> packet;
+
+        if (mode == 2) {
+                content = blockChainPtr->hash();
+                mode = (packet == content) ? 0 : -2;
+            }
+            else if (mode == 3) {
+                if(!(blockChainPtr->addBlocks(packet))) {
+                    emit updateTextBrowser("There were errors <b>from the connected node:</b><br>" + (blockChainPtr->getErrors()));
+                }
+                mode = -1;
+            }
+            else {
+                Blockchain<File> importedChain = packet;
+                QString errors = importedChain.getErrors();
+
+                if (errors.isEmpty()) {
+                    /* Compare to other nodes */
+
+
+                    blockChainPtr->operator=(importedChain);
+                }
+                else {
+                    emit updateTextBrowser("There were errors <b>from the connected node:</b><br>" + (importedChain.getErrors()));
+                }
+
+                socket->disconnectFromHost();
+                return;
+            }
+    }
+    else if (!mode) {
+        mode = -2;
+    }
+    else if (mode == 1) {
+        mode = -1;
+    }
+
+    /* there are 3 modes FROM SERVER (all NON-positive):
+     * 0 : Server + client blockchain is up to date
+     * -1 : Server sends hash
+     * -2 : Server sends its blockchain
+     */
+
+    sendBlocks(socket, mode, content);
+    socket->disconnectFromHost();
+}
+
+void Server::sendBlocks(QTcpSocket *socket, qint8 mode, QByteArray &message)
+{
+    QByteArray block;
+    QDataStream out(&block, QIODevice::WriteOnly);
+    out << (quint64) 0;
+    out << mode;
+
+    if (mode) {
+        if (message.isEmpty()) {
+            if (mode == -1) {
+                message = blockChainPtr->hash();
+            }
+            else {
+                QString path = QCoreApplication::applicationDirPath() + "/blockchain";
+                QFile ifs(path);
+
+                if (!ifs.open(QIODevice::ReadOnly)) {
+                    QMessageBox messageBox;
+                    messageBox.critical(0,"Error",("Cannot open:\n" + path + "\n"));
+            //        cerr << "Can not open: " << path << " !" << endl;
+                    exit(1);
+                }
+
+                message = ifs.readAll();
+                ifs.close();
+            }
+        }
+
+        out << message;
+ //    cerr << (quint64)(block.size() - sizeof(quint64)) << endl;
+    }
+
     out.device()->seek(0);
     out << (quint64)(block.size() - sizeof(quint64));
-
-//    cerr << (quint64)(block.size() - sizeof(quint64)) << endl;
-//! [6] //! [7]
-
-    QTcpSocket *clientConnection = tcpServer->nextPendingConnection();
-    connect(clientConnection, SIGNAL(disconnected()),
-            clientConnection, SLOT(deleteLater()));
-//! [7] //! [8]
-
-    clientConnection->write(block);
-    clientConnection->disconnectFromHost();
-//! [5]
+    socket->write(block);
 }
-//! [8]

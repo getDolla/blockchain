@@ -94,13 +94,10 @@ Client::Client(const vector<Connection>& connections):
     connect(portLineEdit, SIGNAL(textChanged(QString)),
             this, SLOT(enableButton()));
 
-//! [0]
     connect(&thread, SIGNAL(newBlockchain(QByteArray)),
             this, SLOT(showblockchain(QByteArray)));
-//! [0] //! [1]
     connect(&thread, SIGNAL(error(int,QString)),
             this, SLOT(displayError(int,QString)));
-//! [1]
 
 //    cerr << "In client constructor\n";
 }
@@ -117,19 +114,21 @@ Client::~Client() {
     close();
 }
 
-//! [2]
 void Client::requestBlockchain()
 {
     button->setEnabled(false);
     thread.requestBlockchain(hostLineEdit->text(),
                              portLineEdit->text().toInt());
 }
-//! [2]
 
-//! [3]
 void Client::showblockchain(const QByteArray &nextblockchain)
 {
     emit addConnection(thread.getHost(), thread.getPort());
+
+    QString text = "Connected to:<br>";
+    text += "<b>IP Address:</b> " + thread.getHost() + "<br><b>Port:</b> " + QString::number((quint16) thread.getPort()) + "<br>";
+
+    emit updateTextBrowser(text);
 
 //    cerr << "In show blockchain\n";
     Blockchain<File> importedChain = nextblockchain;
@@ -138,9 +137,8 @@ void Client::showblockchain(const QByteArray &nextblockchain)
 //       cerr << "In showblockchain\n";
 //       cerr << nextblockchain.toStdString() << endl;
 
-    emit newBlockchain(importedChain.errors, importedChain);
+    emit newBlockchain(importedChain.getErrors(), importedChain);
 }
-//! [4]
 
 void Client::displayError(int socketError, const QString &message)
 {
@@ -175,4 +173,8 @@ void Client::updateServerLists(const std::vector<Connection>& hosts) {
     for(const Connection& c : hosts) {
         hostList->append("<b>IP Address:</b> " + c.ipAddr + "<br><b>Port:</b> " + QString::number((quint16) c.portAddr) + "<br>");
     }
+}
+
+void Client::sendBlockchain() {
+    return;
 }

@@ -9,6 +9,7 @@
 #include <QMainWindow>
 
 #include <vector>
+#include <map>
 
 #include "client.h"
 #include "Blockchain.h"
@@ -49,11 +50,16 @@ private slots:
 
     void saveConnection(const QString& ip, quint16 port);
 
+    void addText(const QString& updates);
+
+    void displayError(int socketError, const QString &message);
+
 private:
     Ui::MainWindow *ui;
     Server server;
-    Blockchain<File> bChain;
+    Blockchain<File>* bChain;
     vector<Connection> connections;
+    map<QByteArray, vector<Connection>> hashMap;
     unsigned int _nIndex;
 };
 

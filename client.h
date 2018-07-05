@@ -64,7 +64,6 @@ struct Connection {
     Connection(const QString& ip, quint16 port): ipAddr(ip), portAddr(port) {}
 };
 
-//! [0]
 class Client : public QDialog
 {
     Q_OBJECT
@@ -77,6 +76,7 @@ public:
 signals:
     void newBlockchain(const QString& messages, const Blockchain<File>& otherChain);
     void addConnection(const QString& ip, quint16 port);
+    void updateTextBrowser(const QString& updates);
 
 private slots:
     void requestBlockchain();
@@ -84,6 +84,7 @@ private slots:
     void displayError(int socketError, const QString &message);
     void enableButton();
     void updateServerLists(const vector<Connection>& hosts);
+    void sendBlockchain();
 
 private:
     Thread thread;
@@ -96,6 +97,5 @@ private:
     QTextBrowser* hostList;
     QLabel* listLabel;
 };
-//! [0]
 
 #endif
