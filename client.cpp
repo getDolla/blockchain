@@ -40,141 +40,93 @@
 
 #include "client.h"
 
-//#include <iostream>
-using namespace std;
+/* there are 5 modes FROM CLIENT (all NON-negative):
+ * 0 : client blockchain is broken -> server sends its blockchain
+ * 1 : client wants server hash -> server sends its hash
+ * 2 : client is sending hash -> server compares (sends all good if everything matches, else its blockchain)
+ * 3 : client is sending blocks -> new blocks added, server appends to end of blockchain and sends its hash
+ * 4 : client is sending entire blockchain -> server checks sent blockchain for errors and compares it to other nodes (if all good, uses that blockchain)
+*/
 
+/* there are 4 modes FROM SERVER (all NON-positive):
+ * 0 : Server + client blockchain is up to date
+ * -1 : Server sends hash
+ * -2 : Server sends its blockchain
+ * -100 : Error has occured
+*/
 
-Client::Client(const vector<Connection>& connections):
-    hostLabel(new QLabel(tr("Server Name:"))), portLabel(new QLabel(tr("Server Port:"))),
-    button(new QPushButton(tr("Connect to Node"))), portLineEdit(new QLineEdit()),
-    hostList(new QTextBrowser()), listLabel(new QLabel("Connected Servers:")), hostLineEdit(nullptr)
+Client::Client() {}
+
+Client::~Client() {}
+
+Package Client::talk(const QString &hostName, quint16 port, qint8 theMode, const QByteArray& theData)
 {
-    // find out which IP to connect to
-    QString ipAddress;
-    QList<QHostAddress> ipAddressesList = QNetworkInterface::allAddresses();
-    // use the first non-localhost IPv4 address
-    for (int i = 0; i < ipAddressesList.size(); ++i) {
-        if (ipAddressesList.at(i) != QHostAddress::LocalHost &&
-            ipAddressesList.at(i).toIPv4Address()) {
-            ipAddress = ipAddressesList.at(i).toString();
-            break;
+    QString serverName = hostName;
+    quint16 serverPort = port;
+    qint8 clientMode = theMode;
+    QByteArray dataToSend = theData;
+
+    const int Timeout = 10 * 1000;
+
+    QTcpSocket socket;
+    socket.connectToHost(serverName, serverPort);
+    connect(&socket, SIGNAL(disconnected()), &socket, SLOT(deleteLater()));
+
+    if (!socket.waitForConnected(Timeout)) {
+        emit error(socket.error(), socket.errorString(), serverName, serverPort);
+        throw connection_error;
+    }
+    emit addConnection(serverName, serverPort);
+
+    QByteArray block;
+    QDataStream out(&block, QIODevice::WriteOnly);
+    out << (quint64) 0;
+    out << clientMode;
+
+    if (clientMode > 1) {
+        out << dataToSend;
+    }
+
+    out.device()->seek(0);
+    out << (quint64)(block.size() - sizeof(quint64));
+
+    if(socket.state() == QAbstractSocket::ConnectedState) {
+        socket.write(block);
+    }
+
+    if (!socket.waitForBytesWritten(Timeout)) {
+        emit error(socket.error(), socket.errorString(), serverName, serverPort);
+        throw connection_error;
+    }
+
+    while (socket.bytesAvailable() < (quint64)sizeof(quint64)) {
+        if (!socket.waitForReadyRead(Timeout)) {
+            emit error(socket.error(), socket.errorString(), serverName, serverPort);
+            throw connection_error;
         }
     }
-    // if we did not find one, use IPv4 localhost
-    if (ipAddress.isEmpty())
-        ipAddress = QHostAddress(QHostAddress::LocalHost).toString();
 
-//    QFont font("MS Shell Dlg", 9);
-    setFont(QFont("MS Shell Dlg", 9));
+    quint64 blockSize;
+    QDataStream in(&socket);
+    in >> blockSize;
 
-    hostLineEdit = new QLineEdit(ipAddress);
-    portLineEdit->setValidator(new QIntValidator(1, 65535, this));
-    button->setEnabled(false);
-
-    QGridLayout *mainLayout = new QGridLayout;
-    mainLayout->addWidget(listLabel, 0, 0);
-    mainLayout->addWidget(hostList, 1, 0, 2, 0);
-    mainLayout->addWidget(hostLabel, 3, 0);
-    mainLayout->addWidget(hostLineEdit, 3, 1);
-    mainLayout->addWidget(portLabel, 4, 0);
-    mainLayout->addWidget(portLineEdit, 4, 1);
-    mainLayout->addWidget(button, 6, 0, 1, 2);
-    setLayout(mainLayout);
-
-    setWindowTitle(tr("Blockchain Client"));
-    portLineEdit->setFocus();
-
-    for(const Connection& c : connections) {
-        hostList->append("<b>IP Address:</b> " + c.ipAddr + "<br><b>Port:</b> " + QString::number((quint16) c.portAddr) + "<br>");
+    while (socket.bytesAvailable() < blockSize) {
+        if (!socket.waitForReadyRead(Timeout)) {
+            emit error(socket.error(), socket.errorString(), serverName, serverPort);
+            throw connection_error;
+        }
     }
 
-    connect(button, SIGNAL(clicked()), this, SLOT(requestBlockchain()));
-    connect(hostLineEdit, SIGNAL(textChanged(QString)),
-            this, SLOT(enableButton()));
-    connect(portLineEdit, SIGNAL(textChanged(QString)),
-            this, SLOT(enableButton()));
+    mutex.lock();
 
-    connect(&thread, SIGNAL(newBlockchain(QByteArray)),
-            this, SLOT(showblockchain(QByteArray)));
-    connect(&thread, SIGNAL(error(int,QString)),
-            this, SLOT(displayError(int,QString)));
+    qint8 serverMode;
+    in >> serverMode;
 
-//    cerr << "In client constructor\n";
-}
-
-Client::~Client() {
-//    cerr << "In destructor..." << endl;
-    delete hostLabel;
-    delete portLabel;
-    delete button;
-    delete hostLineEdit;
-    delete portLineEdit;
-    delete hostList;
-    delete listLabel;
-    close();
-}
-
-void Client::requestBlockchain()
-{
-    button->setEnabled(false);
-    thread.requestBlockchain(hostLineEdit->text(),
-                             portLineEdit->text().toInt());
-}
-
-void Client::showblockchain(const QByteArray &nextblockchain)
-{
-    emit addConnection(thread.getHost(), thread.getPort());
-
-    QString text = "Connected to:<br>";
-    text += "<b>IP Address:</b> " + thread.getHost() + "<br><b>Port:</b> " + QString::number((quint16) thread.getPort()) + "<br>";
-
-    emit updateTextBrowser(text);
-
-//    cerr << "In show blockchain\n";
-    Blockchain<File> importedChain = nextblockchain;
-
-
-//       cerr << "In showblockchain\n";
-//       cerr << nextblockchain.toStdString() << endl;
-
-    emit newBlockchain(importedChain.getErrors(), importedChain);
-}
-
-void Client::displayError(int socketError, const QString &message)
-{
-    switch (socketError) {
-    case QAbstractSocket::HostNotFoundError:
-        QMessageBox::information(this, tr("Blockchain Client"),
-                                 tr("The host was not found. Please check the "
-                                    "host and port settings."));
-        break;
-    case QAbstractSocket::ConnectionRefusedError:
-        QMessageBox::information(this, tr("Blockchain Client"),
-                                 tr("The connection was refused by the peer. "
-                                    "Make sure the blockchain server is running, "
-                                    "and check that the host name and port "
-                                    "settings are correct."));
-        break;
-    default:
-        QMessageBox::information(this, tr("Blockchain Client"),
-                                 tr("The following error occurred: %1.")
-                                 .arg(message));
+    if (!serverMode) {
+        return Package("", serverMode);
     }
-}
 
-void Client::enableButton()
-{
-    bool enable(!hostLineEdit->text().isEmpty() && !portLineEdit->text().isEmpty());
-    button->setEnabled(enable);
-}
-
-void Client::updateServerLists(const std::vector<Connection>& hosts) {
-    hostList->clear();
-    for(const Connection& c : hosts) {
-        hostList->append("<b>IP Address:</b> " + c.ipAddr + "<br><b>Port:</b> " + QString::number((quint16) c.portAddr) + "<br>");
-    }
-}
-
-void Client::sendBlockchain() {
-    return;
+    QByteArray blockchain;
+    in >> blockchain;
+    return Package(blockchain, serverMode);
 }

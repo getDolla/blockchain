@@ -30,8 +30,8 @@ SOURCES += \
         main.cpp \
         mainwindow.cpp \
     server.cpp \
-    client.cpp \
-    thread.cpp
+    dialog.cpp \
+    client.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -39,8 +39,8 @@ HEADERS += \
     Blockchain.h \
     File.h \
     server.h \
-    client.h \
-    thread.h
+    dialog.h \
+    client.h
 
 FORMS += \
         mainwindow.ui

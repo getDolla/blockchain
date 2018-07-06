@@ -38,40 +38,51 @@
 **
 ****************************************************************************/
 
-#ifndef THREAD_H
-#define THREAD_H
+#ifndef DIALOG_H
+#define DIALOG_H
 
-#include <QThread>
-#include <QMutex>
-#include <QWaitCondition>
+#include <QDialog>
+#include <QtWidgets>
+#include <QFont>
+#include <QTextBrowser>
 #include <QtNetwork>
-#include <QByteArray>
 #include <QString>
+#include <QByteArray>
 
-class Thread : public QThread
+#include <vector>
+
+#include "mainwindow.h"
+
+#include "Blockchain.h"
+#include "File.h"
+
+struct Connection;
+
+class Dialog : public QDialog
 {
     Q_OBJECT
 
+    friend class MainWindow;
 public:
-    Thread(QObject *parent = 0);
-    ~Thread();
-
-    void requestBlockchain(const QString &hostName, quint16 port);
-    void run();
-
-    QString getHost() const;
-    quint16 getPort() const;
+    Dialog(const vector<Connection>& connections);
+    ~Dialog();
 
 signals:
-    void newBlockchain(const QByteArray &blockchain);
-    void error(int socketError, const QString &message);
+    void selectedSettings(const QString &hostName, quint16 port);
+
+private slots:
+    void requestBlockchain();
+    void enableButton();
+    void updateServerLists(const vector<Connection>& hosts);
 
 private:
-    QString hostName;
-    quint16 port;
-    QMutex mutex;
-    QWaitCondition cond;
-    bool quit;
+    QLabel *hostLabel;
+    QLabel *portLabel;
+    QLineEdit *hostLineEdit;
+    QLineEdit *portLineEdit;
+    QPushButton *button;
+    QTextBrowser* hostList;
+    QLabel* listLabel;
 };
 
 #endif

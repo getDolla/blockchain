@@ -260,7 +260,7 @@ private:
                 if (flag) {
                     QMessageBox messageBox;
                     messageBox.critical(0,"Error","Hash inconsistency at genesis block!");
-                    exit(1);
+//                    exit(1);
                 }
 
                 return false;
@@ -290,7 +290,7 @@ private:
                         if (flag) {
                             QMessageBox messageBox;
                             messageBox.critical(0,"Error", "Hash inconsistency at block " + QString::number(ind) + "\n");
-                            exit(1);
+//                            exit(1);
                         }
 
                         return false;

@@ -60,7 +60,7 @@ class Server : public QDialog
 
      friend class MainWindow;
 public:
-    Server(Blockchain<File>* chainPtr, vector<Connection>* connecPtr);
+    Server(Blockchain<File>* chainPtr, vector<Connection>* connecPtr, bool* serverFlag);
     ~Server();
 
     QString getIpAddress() const {
@@ -74,7 +74,7 @@ public:
 signals:
     void updateTextBrowser(const QString& updates);
     void addConnection(const QString& ip, quint16 port);
-    void error(int socketError, const QString &message);
+    void error(int socketError, const QString &message, const QString& ip, quint16 port);
 
 private slots:
     void sessionOpened();
@@ -87,6 +87,7 @@ private:
 
     Blockchain<File>* blockChainPtr;
     vector<Connection>* connectionsPtr;
+    bool* waitFlag;
 
     QString ipAddress;
     qint16 port;

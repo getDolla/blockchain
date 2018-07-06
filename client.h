@@ -42,27 +42,24 @@
 #define CLIENT_H
 
 #include <QDialog>
-#include <QtWidgets>
-#include <QFont>
-#include <QTextBrowser>
 #include <QtNetwork>
-#include <QString>
 #include <QByteArray>
+#include <QString>
 
-#include <vector>
+#include <exception>
 
-#include "thread.h"
-#include "mainwindow.h"
-
-#include "Blockchain.h"
-#include "File.h"
-
-struct Connection {
-    QString ipAddr;
-    quint16 portAddr;
-
-    Connection(const QString& ip, quint16 port): ipAddr(ip), portAddr(port) {}
+struct Package {
+    QByteArray data;
+    qint8 mode;
+    Package(const QByteArray& theData, qint8 theMode): data(theData), mode(theMode) {}
 };
+
+struct connection_error : public exception {
+    const char * what () const throw () {
+        return "Failed to Connect";
+    }
+};
+
 
 class Client : public QDialog
 {
@@ -70,32 +67,15 @@ class Client : public QDialog
 
     friend class MainWindow;
 public:
-    Client(const vector<Connection>& connections);
+    Client();
     ~Client();
 
 signals:
-    void newBlockchain(const QString& messages, const Blockchain<File>& otherChain);
+    void error(int socketError, const QString &message, const QString& ip, quint16 port);
     void addConnection(const QString& ip, quint16 port);
-    void updateTextBrowser(const QString& updates);
-
-private slots:
-    void requestBlockchain();
-    void showblockchain(const QByteArray &blockchain);
-    void displayError(int socketError, const QString &message);
-    void enableButton();
-    void updateServerLists(const vector<Connection>& hosts);
-    void sendBlockchain();
 
 private:
-    Thread thread;
-
-    QLabel *hostLabel;
-    QLabel *portLabel;
-    QLineEdit *hostLineEdit;
-    QLineEdit *portLineEdit;
-    QPushButton *button;
-    QTextBrowser* hostList;
-    QLabel* listLabel;
+    Package talk(const QString &hostName, quint16 port, qint8 theMode, const QByteArray& theData);
 };
 
 #endif

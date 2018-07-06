@@ -42,8 +42,8 @@
 //#include <iostream>
 using namespace std;
 
-Server::Server(Blockchain<File> *chainPtr, vector<Connection> *connecPtr)
-:  blockChainPtr(chainPtr), connectionsPtr(connecPtr), tcpServer(nullptr), networkSession(nullptr), port(0)
+Server::Server(Blockchain<File> *chainPtr, vector<Connection> *connecPtr, bool* serverFlag)
+:  blockChainPtr(chainPtr), connectionsPtr(connecPtr), tcpServer(nullptr), waitFlag(serverFlag), networkSession(nullptr), port(0)
 {
     QNetworkConfigurationManager manager;
     if (manager.capabilities() & QNetworkConfigurationManager::NetworkSessionRequired) {
@@ -122,9 +122,11 @@ void Server::sessionOpened()
 void Server::handleConnection() {
     while (tcpServer->hasPendingConnections())
         {
-            QTcpSocket* socket = tcpServer->nextPendingConnection();
-            connect(socket, SIGNAL(readyRead()), this, SLOT(readBlocks()));
-            connect(socket, SIGNAL(disconnected()), socket, SLOT(deleteLater()));
+            if (!(*waitFlag)) {
+                QTcpSocket* socket = tcpServer->nextPendingConnection();
+                connect(socket, SIGNAL(readyRead()), this, SLOT(readBlocks()));
+                connect(socket, SIGNAL(disconnected()), socket, SLOT(deleteLater()));
+            }
         }
 }
 
@@ -142,7 +144,7 @@ void Server::readBlocks() {
 
     while (socket->bytesAvailable() < (quint64)sizeof(quint64)) {
         if (!(socket->waitForReadyRead(Timeout))) {
-            emit error(socket->error(), socket->errorString());
+            emit error(socket->error(), socket->errorString(), socket->peerAddress(), socket->peerPort());
             return;
         }
     }
@@ -153,7 +155,7 @@ void Server::readBlocks() {
 
     while (socket->bytesAvailable() < blockSize) {
         if (!(socket->waitForReadyRead(Timeout))) {
-            emit error(socket->error(), socket->errorString());
+            emit error(socket->error(), socket->errorString(), socket->peerAddress(), socket->peerPort());
             return;
         }
     }
@@ -193,13 +195,14 @@ void Server::readBlocks() {
 
 
                     blockChainPtr->operator=(importedChain);
+                    mode = 0;
                 }
                 else {
-                    emit updateTextBrowser("There were errors <b>from the connected node:</b><br>" + (importedChain.getErrors()));
-                }
+                    /* Try to get blockchain from another peer */
 
-                socket->disconnectFromHost();
-                return;
+                    emit updateTextBrowser("There were errors <b>from the connected node:</b><br>" + (importedChain.getErrors()));
+                    mode = -2;
+                }
             }
     }
     else if (!mode) {
@@ -209,11 +212,12 @@ void Server::readBlocks() {
         mode = -1;
     }
 
-    /* there are 3 modes FROM SERVER (all NON-positive):
+    /* there are 4 modes FROM SERVER (all NON-positive):
      * 0 : Server + client blockchain is up to date
      * -1 : Server sends hash
      * -2 : Server sends its blockchain
-     */
+     * -100 : Error has occured
+    */
 
     sendBlocks(socket, mode, content);
     socket->disconnectFromHost();
