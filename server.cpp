@@ -192,16 +192,23 @@ void Server::readBlocks() {
 
                 if (errors.isEmpty()) {
                     /* Compare to other nodes */
-
-
-                    blockChainPtr->operator=(importedChain);
+                    emit updateBlockchain(importedChain, packet);
                     mode = 0;
                 }
                 else {
-                    /* Try to get blockchain from another peer */
+                    emit updateTextBrowser("There were errors <b>from the connected node:</b><br>" + errors);
 
-                    emit updateTextBrowser("There were errors <b>from the connected node:</b><br>" + (importedChain.getErrors()));
-                    mode = -2;
+                    /* Try to get blockchain from another peer */
+                    if (connectionsPtr->size() > 1) {
+
+
+
+                        mode = -2;
+                    }
+                    else {
+                        /* else */
+                        mode = -100;
+                    }
                 }
             }
     }

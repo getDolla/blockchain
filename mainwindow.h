@@ -6,6 +6,7 @@
 #include <QDataStream>
 #include <QFileDialog>
 #include <QString>
+#include <QCryptographicHash>
 #include <QMainWindow>
 
 #include <vector>
@@ -65,6 +66,8 @@ private slots:
 
     void setUpConnection(const QString& ip, quint16 port);
 
+    void newBlockchain(const Blockchain<File>& importedChain, const QByteArray& packet);
+
 private:
     Ui::MainWindow *ui;
     Server server;
@@ -75,6 +78,9 @@ private:
     unsigned int _nIndex;
     qint8 mode;
     bool serverWait;
+
+    //returns most common hash (or none if blockchain is already up to date / no connections available)
+    QByteArray checkForUpdates();
 };
 
 #endif // MAINWINDOW_H

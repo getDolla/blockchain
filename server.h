@@ -58,7 +58,6 @@ class Server : public QDialog
 {
     Q_OBJECT
 
-     friend class MainWindow;
 public:
     Server(Blockchain<File>* chainPtr, vector<Connection>* connecPtr, bool* serverFlag);
     ~Server();
@@ -75,6 +74,7 @@ signals:
     void updateTextBrowser(const QString& updates);
     void addConnection(const QString& ip, quint16 port);
     void error(int socketError, const QString &message, const QString& ip, quint16 port);
+    void updateBlockchain(const Blockchain<File>& importedChain, const QByteArray& packet);
 
 private slots:
     void sessionOpened();

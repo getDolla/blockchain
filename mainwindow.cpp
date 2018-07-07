@@ -30,6 +30,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(&server, SIGNAL(addConnection(QString,quint16)), this, SLOT(saveConnection(QString,quint16)));
     connect(&server, SIGNAL(updateTextBrowser(QString)), this, SLOT(addText(QString)));
     connect(&server, SIGNAL(error(int,QString,QString,quint16)), this, SLOT(displayError(int,QString,QString,quint16)));
+    connect(&server, SIGNAL(updateBlockchain(Blockchain<File>, QByteArray)), this, SLOT(newBlockchain(Blockchain<File>, QByteArray)));
 
     connect(&client, SIGNAL(error(int,QString,QString,quint16)), this, SLOT(displayError(int,QString,QString,quint16)));
     connect(&client, SIGNAL(addConnection(QString,quint16)), this, SLOT(saveConnection(QString,quint16)));
@@ -244,11 +245,38 @@ void MainWindow::setUpConnection(const QString &ip, quint16 port) {
         else if (fromServer.mode == -1) {
             hashMap[fromServer.data].push_back(Connection(ip,port));
         }
-        else {
+        else if (fromServer.mode == -2) {
+            Blockchain<File> importedChain = packet;
+            QString errors = importedChain.getErrors();
 
+            if (errors.isEmpty()) {
+
+            }
+            else {
+                ui->textBrowser->append("There were errors <b>from the connected node:</b><br>" + errors);
+            }
         }
     } catch (...) {
         cerr << "Error connecting..." << endl;
+    }
+}
+
+void MainWindow::newBlockchain(const Blockchain<File>& importedChain, const QByteArray &packet) {
+    QByteArray importedHash = QCryptographicHash::hash(packet, QCryptographicHash::Sha3_512).toHex();
+    QByteArray commonHash = checkForUpdates();
+
+    if (commonHash == importedHash) {
+        bChain->operator =(importedChain);
+        return;
+    }
+
+    if (importedHash == bChain->hash()) {
+        return;
+    }
+
+    if (!commonHash.isEmpty()) {
+        Connection commonServer = hashMap[commonHash].back();
+        setUpConnection(commonServer.ipAddr, commonServer.portAddr);
     }
 }
 

@@ -117,12 +117,10 @@ Package Client::talk(const QString &hostName, quint16 port, qint8 theMode, const
         }
     }
 
-    mutex.lock();
-
     qint8 serverMode;
     in >> serverMode;
 
-    if (!serverMode) {
+    if ((!serverMode) || (server == -100)) {
         return Package("", serverMode);
     }
 
