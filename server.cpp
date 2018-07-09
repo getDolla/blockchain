@@ -40,10 +40,9 @@
 #include "server.h"
 
 //#include <iostream>
-using namespace std;
 
-Server::Server(Blockchain<File> *chainPtr, vector<Connection> *connecPtr, bool* serverFlag)
-:  blockChainPtr(chainPtr), connectionsPtr(connecPtr), tcpServer(nullptr), waitFlag(serverFlag), networkSession(nullptr), port(0)
+Server::Server(MainWindow* mainW, Blockchain<File>* chainPtr, const vector<Connection>* connecPtr, bool* serverFlag)
+:  mainWptr(mainW), blockChainPtr(chainPtr), connectionsPtr(connecPtr), tcpServer(nullptr), waitFlag(serverFlag), networkSession(nullptr), port(0)
 {
     QNetworkConfigurationManager manager;
     if (manager.capabilities() & QNetworkConfigurationManager::NetworkSessionRequired) {
@@ -144,7 +143,7 @@ void Server::readBlocks() {
 
     while (socket->bytesAvailable() < (quint64)sizeof(quint64)) {
         if (!(socket->waitForReadyRead(Timeout))) {
-            emit error(socket->error(), socket->errorString(), socket->peerAddress(), socket->peerPort());
+            emit error(socket->error(), socket->errorString(), socket->peerAddress().toString(), socket->peerPort());
             return;
         }
     }
@@ -155,7 +154,7 @@ void Server::readBlocks() {
 
     while (socket->bytesAvailable() < blockSize) {
         if (!(socket->waitForReadyRead(Timeout))) {
-            emit error(socket->error(), socket->errorString(), socket->peerAddress(), socket->peerPort());
+            emit error(socket->error(), socket->errorString(), socket->peerAddress().toString(), socket->peerPort());
             return;
         }
     }
@@ -200,9 +199,7 @@ void Server::readBlocks() {
 
                     /* Try to get blockchain from another peer */
                     if (connectionsPtr->size() > 1) {
-
-
-
+                        mainWptr->updateBlockchain();
                         mode = -2;
                     }
                     else {

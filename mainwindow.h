@@ -25,7 +25,9 @@ namespace Ui {
 class MainWindow;
 }
 
-struct Package, connection_error;
+struct Package;
+struct connection_error;
+class Server;
 
 struct Connection {
     QString ipAddr;
@@ -41,6 +43,8 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
+
+    void updateBlockchain();
 
 signals:
     void addNewHost(const vector<Connection>& hosts);
@@ -70,7 +74,7 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
-    Server server;
+    Server* server;
     Client client;
     Blockchain<File>* bChain;
     vector<Connection> connections;

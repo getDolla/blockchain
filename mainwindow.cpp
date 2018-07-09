@@ -19,18 +19,18 @@
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent), ui(new Ui::MainWindow),
     _nIndex(0), mode(2), serverWait(false),
-    bChain(new Blockchain<File>()), server(bChain, &connections, &serverWait)
+    bChain(new Blockchain<File>()), server(new Server(this, bChain, &connections, &serverWait))
 {
     ui->setupUi(this);
 
     ui->label->setText("Blockchain Length: " + QString::number(bChain->length()));
-    ui->ipLabel->setText("IP Address: " + server.getIpAddress());
-    ui->portLabel->setText("Port: " + QString::number((quint16) (server.getPort())));
+    ui->ipLabel->setText("IP Address: " + server->getIpAddress());
+    ui->portLabel->setText("Port: " + QString::number((quint16) (server->getPort())));
 
-    connect(&server, SIGNAL(addConnection(QString,quint16)), this, SLOT(saveConnection(QString,quint16)));
-    connect(&server, SIGNAL(updateTextBrowser(QString)), this, SLOT(addText(QString)));
-    connect(&server, SIGNAL(error(int,QString,QString,quint16)), this, SLOT(displayError(int,QString,QString,quint16)));
-    connect(&server, SIGNAL(updateBlockchain(Blockchain<File>, QByteArray)), this, SLOT(newBlockchain(Blockchain<File>, QByteArray)));
+    connect(server, SIGNAL(addConnection(QString,quint16)), this, SLOT(saveConnection(QString,quint16)));
+    connect(server, SIGNAL(updateTextBrowser(QString)), this, SLOT(addText(QString)));
+    connect(server, SIGNAL(error(int,QString,QString,quint16)), this, SLOT(displayError(int,QString,QString,quint16)));
+    connect(server, SIGNAL(updateBlockchain(Blockchain<File>, QByteArray)), this, SLOT(newBlockchain(Blockchain<File>, QByteArray)));
 
     connect(&client, SIGNAL(error(int,QString,QString,quint16)), this, SLOT(displayError(int,QString,QString,quint16)));
     connect(&client, SIGNAL(addConnection(QString,quint16)), this, SLOT(saveConnection(QString,quint16)));
@@ -55,7 +55,18 @@ MainWindow::~MainWindow()
     }
 
     delete bChain;
+    delete server;
     delete ui;
+}
+
+void MainWindow::updateBlockchain() {
+    QByteArray commonHash = checkForUpdates();
+    if (!commonHash.isEmpty()) {
+        Connection commonServer = hashMap[commonHash].back();
+        mode = 0;
+        setUpConnection(commonServer.ipAddr, commonServer.portAddr);
+    }
+    bChain->save();
 }
 
 void MainWindow::on_UpdateBlockchain_clicked()
@@ -66,7 +77,7 @@ void MainWindow::on_UpdateBlockchain_clicked()
     ui->Store->setEnabled(false);
     ui->UpdateBlockchain->setEnabled(false);
 
-    bChain->save();
+    updateBlockchain();
     ui->textBrowser->append("Done.");
 
     ui->textBrowser->append("\n");
@@ -103,7 +114,44 @@ void MainWindow::on_Store_clicked()
 
         serverWait = true;
 
+        mode = 3;
+        updateBlockchain();
+
         QString hash = bChain->addBlock(File(fileName, content));
+
+        QString path = QCoreApplication::applicationDirPath() + "/blockchain";
+        QFile blockchain(path);
+
+        if (!blockchain.open(QIODevice::ReadOnly)) {
+            QMessageBox messageBox;
+            messageBox.critical(0,"Error",("Cannot open:\n" + path + "\n"));
+            exit(1);
+        }
+
+        qint64 pos = blockchain.size() - 1;
+
+        do {
+            blockchain.seek(--pos);
+        } while (blockchain.peek(1) != "\n");
+        blockchain.seek(++pos);
+
+        QByteArray data = blockchain.readLine(blockchain.size() - pos);
+        cerr << data.toStdString() << endl;
+        blockchain.close();
+
+        hashMap.clear();
+        size_t ctr = 0;
+        while (ctr < connections.size()) {
+            try {
+                Package fromServer = client.talk(connections[ctr].ipAddr, connections[ctr].portAddr, 3, data);
+
+                if (fromServer.mode == -1) {
+                    hashMap[fromServer.data].push_back(Connection(connections[ctr].ipAddr,connections[ctr].portAddr));
+                }
+                ++ctr;
+            } catch(...) { cerr << "[checkforupdates]: caught error from setUpConnection." << endl; }
+        }
+
         ui->textBrowser->append("Block mined: " + hash + "\n");
 
         serverWait = false;
@@ -246,18 +294,31 @@ void MainWindow::setUpConnection(const QString &ip, quint16 port) {
             hashMap[fromServer.data].push_back(Connection(ip,port));
         }
         else if (fromServer.mode == -2) {
-            Blockchain<File> importedChain = packet;
+            Blockchain<File> importedChain = fromServer.data;
             QString errors = importedChain.getErrors();
 
             if (errors.isEmpty()) {
-
+                newBlockchain(importedChain, fromServer.data);
             }
             else {
                 ui->textBrowser->append("There were errors <b>from the connected node:</b><br>" + errors);
+                ui->textBrowser->append("Sending blockchain on this computer to connected node...");
+                mode = 4;
+                setUpConnection(ip, port);
             }
         }
     } catch (...) {
         cerr << "Error connecting..." << endl;
+
+        for(size_t i = 0; i < connections.size(); ++i) {
+            if ((connections[i].ipAddr == ip) && (connections[i].portAddr == port)) {
+                connections[i] = connections.back();
+                connections.pop_back();
+                throw connection_error();
+            }
+        }
+
+        throw connection_error();
     }
 }
 
@@ -276,29 +337,36 @@ void MainWindow::newBlockchain(const Blockchain<File>& importedChain, const QByt
 
     if (!commonHash.isEmpty()) {
         Connection commonServer = hashMap[commonHash].back();
+        mode = 0;
         setUpConnection(commonServer.ipAddr, commonServer.portAddr);
     }
+
+    mode = 2;
 }
 
-/*
-void MainWindow::blockChainReceived(const QString& blockChainText, const Blockchain<File>& otherChain) {
-//    cerr << "In MainWindow slot\n";
-    ui->textBrowser->append("There were errors <b>from the connected node:</b>");
-    ui->textBrowser->append("");
+QByteArray MainWindow::checkForUpdates() {
+    hashMap.clear();
+    size_t ctr = 0;
 
-    if (blockChainText.isEmpty()) {
-        ui->textBrowser->append("None :)");
-        ui->textBrowser->append("\n");
-        ui->textBrowser->append("Comparing this blockchain to the node's...");
-
-        ui->textBrowser->append("<b>" + bChain->equals(otherChain) + "</b>");
-    }
-    else {
-        ui->textBrowser->append(blockChainText);
+    while (ctr < connections.size()) {
+        try {
+            mode = 1;
+            setUpConnection(connections[ctr].ipAddr, connections[ctr].portAddr);
+            ++ctr;
+        } catch(...) { cerr << "[checkforupdates]: caught error from setUpConnection." << endl; }
     }
 
-    ui->textBrowser->append("\n");
-} */
+    QByteArray commonHash;
+    size_t maxSize = 0;
+    for (const auto& iter : hashMap) {
+        if (iter.second.size() > maxSize) {
+            maxSize = iter.second.size();
+            commonHash = iter.first;
+        }
+    }
+
+    return commonHash;
+}
 
 void MainWindow::saveConnection(const QString& ip, quint16 port) {
     for(const Connection& c : connections) {
@@ -320,19 +388,19 @@ void MainWindow::displayError(int socketError, const QString &message, const QSt
     switch (socketError) {
     case QAbstractSocket::HostNotFoundError:
         QMessageBox::information(this, tr("Blockchain Client"),
-                                 tr("IP: " + ip + " Port: " + QString::number((quint16) port) + " not found. Please check the "
+                                 ("IP: " + ip + " Port: " + QString::number((quint16) port) + " not found. Please check the " +
                                     "host and port settings."));
         break;
     case QAbstractSocket::ConnectionRefusedError:
         QMessageBox::information(this, tr("Blockchain Client"),
-                                 tr("The connection was refused by: " + "IP: " + ip + " Port: " + QString::number((quint16) port) +
-                                    ". Make sure the blockchain server is running, "
-                                    "and check that the host name and port "
+                                 ("The connection was refused by: IP: " + ip + " Port: " + QString::number((quint16) port) +
+                                    ". Make sure the blockchain server is running, " +
+                                    "and check that the host name and port " +
                                     "settings are correct."));
         break;
     default:
         QMessageBox::information(this, tr("Blockchain Client"),
-                                 tr("Attempted connection: " + "IP: " + ip + " Port: " + QString::number((quint16) port) + ". The following error occurred: %1.")
+                                 ("Attempted connection: IP: " + ip + " Port: " + QString::number((quint16) port) + ". The following error occurred: %1.")
                                  .arg(message));
     }
 

@@ -47,6 +47,7 @@
 #include <QString>
 
 #include <exception>
+using namespace std;
 
 struct Package {
     QByteArray data;

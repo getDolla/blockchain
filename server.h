@@ -46,20 +46,25 @@
 #include <QMessageBox>
 #include <QString>
 
-#include "Blockchain.h"
-#include "File.h"
+#include <exception>
+
+#include "mainwindow.h"
 
 //#include <iostream>
 #include <stdlib.h>
+using namespace std;
 
+struct Package;
+struct connection_error;
 struct Connection;
+class MainWindow;
 
 class Server : public QDialog
 {
     Q_OBJECT
 
 public:
-    Server(Blockchain<File>* chainPtr, vector<Connection>* connecPtr, bool* serverFlag);
+    Server(MainWindow* mainW, Blockchain<File>* chainPtr, const vector<Connection>* connecPtr, bool* serverFlag);
     ~Server();
 
     QString getIpAddress() const {
@@ -86,7 +91,8 @@ private:
     QNetworkSession *networkSession;
 
     Blockchain<File>* blockChainPtr;
-    vector<Connection>* connectionsPtr;
+    MainWindow* mainWptr;
+    const vector<Connection>* connectionsPtr;
     bool* waitFlag;
 
     QString ipAddress;

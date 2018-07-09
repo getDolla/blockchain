@@ -74,7 +74,7 @@ Package Client::talk(const QString &hostName, quint16 port, qint8 theMode, const
 
     if (!socket.waitForConnected(Timeout)) {
         emit error(socket.error(), socket.errorString(), serverName, serverPort);
-        throw connection_error;
+        throw connection_error();
     }
     emit addConnection(serverName, serverPort);
 
@@ -96,13 +96,13 @@ Package Client::talk(const QString &hostName, quint16 port, qint8 theMode, const
 
     if (!socket.waitForBytesWritten(Timeout)) {
         emit error(socket.error(), socket.errorString(), serverName, serverPort);
-        throw connection_error;
+        throw connection_error();
     }
 
     while (socket.bytesAvailable() < (quint64)sizeof(quint64)) {
         if (!socket.waitForReadyRead(Timeout)) {
             emit error(socket.error(), socket.errorString(), serverName, serverPort);
-            throw connection_error;
+            throw connection_error();
         }
     }
 
@@ -113,14 +113,14 @@ Package Client::talk(const QString &hostName, quint16 port, qint8 theMode, const
     while (socket.bytesAvailable() < blockSize) {
         if (!socket.waitForReadyRead(Timeout)) {
             emit error(socket.error(), socket.errorString(), serverName, serverPort);
-            throw connection_error;
+            throw connection_error();
         }
     }
 
     qint8 serverMode;
     in >> serverMode;
 
-    if ((!serverMode) || (server == -100)) {
+    if ((!serverMode) || (serverMode == -100)) {
         return Package("", serverMode);
     }
 
