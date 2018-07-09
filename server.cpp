@@ -122,33 +122,35 @@ void Server::handleConnection() {
     while (tcpServer->hasPendingConnections())
         {
             cerr << "In handleConnection\n";
-            if (!(*waitFlag)) {
+//            if (!(*waitFlag)) {
                 cerr << "wait flag off" << endl;
                 QTcpSocket* socket = tcpServer->nextPendingConnection();
                 connect(socket, SIGNAL(readyRead()), this, SLOT(readBlocks()));
                 connect(socket, SIGNAL(disconnected()), socket, SLOT(deleteLater()));
-            }
-            else {
-                QThread::msleep(1000);
-            }
+//            }
+//            else {
+//                QThread::msleep(1000);
+//            }
         }
 }
 
 void Server::readBlocks() {
     QTcpSocket* socket = static_cast<QTcpSocket*>(sender());
-    const int Timeout = 5 * 1000;
+    const int Timeout = 20 * 1000;
 
-    emit addConnection(socket->peerAddress().toString(), socket->peerPort());
+    QString peerAddress = (socket->peerAddress().toString().contains("::ffff:")) ? socket->peerAddress().toString().mid(7) : socket->peerAddress().toString();
+
+    emit addConnection(peerAddress, socket->peerPort());
 
     QString text = "Connected to:<br>";
-    text += "<b>IP Address:</b> " + socket->peerAddress().toString() + "<br><b>Port:</b> ";
+    text += "<b>IP Address:</b> " + peerAddress + "<br><b>Port:</b> ";
     text += QString::number((quint16) socket->peerPort()) + "<br>";
 
     emit updateTextBrowser(text);
 
     while (socket->bytesAvailable() < (quint64)sizeof(quint64)) {
         if (!(socket->waitForReadyRead(Timeout))) {
-            emit error(socket->error(), socket->errorString(), socket->peerAddress().toString(), socket->peerPort());
+            emit error(socket->error(), socket->errorString(), peerAddress, socket->peerPort());
             return;
         }
     }
@@ -156,17 +158,21 @@ void Server::readBlocks() {
     quint64 blockSize;
     QDataStream in(socket);
     in >> blockSize;
+    cerr << blockSize << endl;
 
     while (socket->bytesAvailable() < blockSize) {
         if (!(socket->waitForReadyRead(Timeout))) {
-            emit error(socket->error(), socket->errorString(), socket->peerAddress().toString(), socket->peerPort());
+            emit error(socket->error(), socket->errorString(), peerAddress, socket->peerPort());
             return;
         }
     }
 
     qint8 mode;
     in >> mode;
+    cerr << QString::number(mode).toStdString() << endl;
     QByteArray content;
+
+    cerr << "read contents\n";
 
     /* there are 5 modes FROM CLIENT (all NON-negative):
      * 0 : client blockchain is broken -> server sends its blockchain
@@ -180,9 +186,12 @@ void Server::readBlocks() {
         QByteArray packet;
         in >> packet;
 
+        cerr << packet.toStdString() << endl;
+
         if (mode == 2) {
                 content = blockChainPtr->hash();
                 mode = (packet == content) ? 0 : -2;
+                cerr << QString::number(mode).toStdString() << endl;
             }
             else if (mode == 3) {
                 if(!(blockChainPtr->addBlocks(packet))) {
@@ -229,17 +238,21 @@ void Server::readBlocks() {
     */
 
     sendBlocks(socket, mode, content);
+    cerr << "gonna disconnect this bad boy\n";
     socket->disconnectFromHost();
+    cerr << "bad boy disconnected\n";
 }
 
 void Server::sendBlocks(QTcpSocket *socket, qint8 mode, QByteArray &message)
 {
+    cerr << "In sendBlocks\n";
     QByteArray block;
     QDataStream out(&block, QIODevice::WriteOnly);
     out << (quint64) 0;
     out << mode;
 
     if (mode) {
+        cerr << "if (mode)" << endl;
         if (message.isEmpty()) {
             if (mode == -1) {
                 message = blockChainPtr->hash();
@@ -266,5 +279,7 @@ void Server::sendBlocks(QTcpSocket *socket, qint8 mode, QByteArray &message)
 
     out.device()->seek(0);
     out << (quint64)(block.size() - sizeof(quint64));
+    cerr << "Writing size in server..." << endl;
+    cerr << (quint64)(block.size() - sizeof(quint64)) << endl;
     socket->write(block);
 }

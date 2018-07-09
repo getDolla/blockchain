@@ -61,66 +61,69 @@ Client::~Client() {}
 
 Package Client::talk(const QString &hostName, quint16 port, qint8 theMode, const QByteArray& theData)
 {
-    QString serverName = hostName;
-    quint16 serverPort = port;
-    qint8 clientMode = theMode;
-    QByteArray dataToSend = theData;
-
-    const int Timeout = 10 * 1000;
+    const int Timeout = 20 * 1000;
 
     QTcpSocket socket;
-    socket.connectToHost(serverName, serverPort);
+    socket.connectToHost(hostName, port);
     connect(&socket, SIGNAL(disconnected()), &socket, SLOT(deleteLater()));
 
     cerr << "Attempted connection in client::talk\n";
 
     if (!socket.waitForConnected(Timeout)) {
-        emit error(socket.error(), socket.errorString(), serverName, serverPort);
+        emit error(socket.error(), socket.errorString(), hostName, port);
         throw connection_error();
     }
-    emit addConnection(serverName, serverPort);
+    emit addConnection(hostName, port);
 
     QByteArray block;
     QDataStream out(&block, QIODevice::WriteOnly);
     out << (quint64) 0;
-    out << clientMode;
+    out << theMode;
 
-    if (clientMode > 1) {
-        out << dataToSend;
+    cerr << QString::number(theMode).toStdString() << endl;
+
+    if (theMode > 1) {
+        out << theData;
+        cerr << theData.toStdString() << endl;
     }
 
     out.device()->seek(0);
     out << (quint64)(block.size() - sizeof(quint64));
+    cerr << (quint64)(block.size() - sizeof(quint64)) << endl;
 
     if(socket.state() == QAbstractSocket::ConnectedState) {
         socket.write(block);
     }
 
     if (!socket.waitForBytesWritten(Timeout)) {
-        emit error(socket.error(), socket.errorString(), serverName, serverPort);
+        emit error(socket.error(), socket.errorString(), hostName, port);
         throw connection_error();
     }
 
     while (socket.bytesAvailable() < (quint64)sizeof(quint64)) {
         if (!socket.waitForReadyRead(Timeout)) {
-            emit error(socket.error(), socket.errorString(), serverName, serverPort);
+            cerr << "In the socket.bytesAvail loop (3rd one)\n";
+            emit error(socket.error(), socket.errorString(), hostName, port);
             throw connection_error();
         }
     }
+    cerr << "out of the socket.bytesAvail loop (3rd one)\n";
 
     quint64 blockSize;
     QDataStream in(&socket);
     in >> blockSize;
+    cerr << blockSize << endl;
 
     while (socket.bytesAvailable() < blockSize) {
         if (!socket.waitForReadyRead(Timeout)) {
-            emit error(socket.error(), socket.errorString(), serverName, serverPort);
+            emit error(socket.error(), socket.errorString(), hostName, port);
             throw connection_error();
         }
     }
 
     qint8 serverMode;
     in >> serverMode;
+    cerr << QString::number(serverMode).toStdString() << endl;
 
     if ((!serverMode) || (serverMode == -100)) {
         return Package("", serverMode);
