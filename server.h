@@ -45,6 +45,7 @@
 #include <QtNetwork>
 #include <QMessageBox>
 #include <QString>
+#include <QThread>
 
 #include <exception>
 

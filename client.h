@@ -47,6 +47,7 @@
 #include <QString>
 
 #include <exception>
+#include <iostream>
 using namespace std;
 
 struct Package {

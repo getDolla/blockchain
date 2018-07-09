@@ -121,10 +121,15 @@ void Server::sessionOpened()
 void Server::handleConnection() {
     while (tcpServer->hasPendingConnections())
         {
+            cerr << "In handleConnection\n";
             if (!(*waitFlag)) {
+                cerr << "wait flag off" << endl;
                 QTcpSocket* socket = tcpServer->nextPendingConnection();
                 connect(socket, SIGNAL(readyRead()), this, SLOT(readBlocks()));
                 connect(socket, SIGNAL(disconnected()), socket, SLOT(deleteLater()));
+            }
+            else {
+                QThread::msleep(1000);
             }
         }
 }

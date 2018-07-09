@@ -72,6 +72,8 @@ Package Client::talk(const QString &hostName, quint16 port, qint8 theMode, const
     socket.connectToHost(serverName, serverPort);
     connect(&socket, SIGNAL(disconnected()), &socket, SLOT(deleteLater()));
 
+    cerr << "Attempted connection in client::talk\n";
+
     if (!socket.waitForConnected(Timeout)) {
         emit error(socket.error(), socket.errorString(), serverName, serverPort);
         throw connection_error();

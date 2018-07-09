@@ -253,6 +253,7 @@ void MainWindow::on_Connect_clicked()
 
 
 void MainWindow::setUpConnection(const QString &ip, quint16 port) {
+    cerr << "In setUpConnection\n";
     QByteArray data;
     if (mode == 2) {
         data = bChain->hash();
