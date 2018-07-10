@@ -140,14 +140,6 @@ void Server::readBlocks() {
 
     QString peerAddress = (socket->peerAddress().toString().contains("::ffff:")) ? socket->peerAddress().toString().mid(7) : socket->peerAddress().toString();
 
-    emit addConnection(peerAddress, socket->peerPort());
-
-    QString text = "Connected to:<br>";
-    text += "<b>IP Address:</b> " + peerAddress + "<br><b>Port:</b> ";
-    text += QString::number((quint16) socket->peerPort()) + "<br>";
-
-    emit updateTextBrowser(text);
-
     while (socket->bytesAvailable() < (quint64)sizeof(quint64)) {
         if (!(socket->waitForReadyRead(Timeout))) {
             emit error(socket->error(), socket->errorString(), peerAddress, socket->peerPort());
@@ -166,6 +158,17 @@ void Server::readBlocks() {
             return;
         }
     }
+
+    quint16 otherPort;
+    in >> otherPort;
+
+    emit addConnection(peerAddress, otherPort);
+
+    QString text = "Connected to:<br>";
+    text += "<b>IP Address:</b> " + peerAddress + "<br><b>Port:</b> ";
+    text += QString::number((quint16) otherPort) + "<br>";
+
+    emit updateTextBrowser(text);
 
     qint8 mode;
     in >> mode;

@@ -29,9 +29,9 @@ QMAKE_LFLAGS = -static
 SOURCES += \
         main.cpp \
         mainwindow.cpp \
-    server.cpp \
     dialog.cpp \
-    client.cpp
+    client.cpp \
+    server.cpp
 
 HEADERS += \
         mainwindow.h \

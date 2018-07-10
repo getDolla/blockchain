@@ -72,7 +72,7 @@ public:
         return ipAddress;
     }
 
-    qint16 getPort() const {
+    quint16 getPort() const {
         return port;
     }
 
@@ -97,7 +97,7 @@ private:
     bool* waitFlag;
 
     QString ipAddress;
-    qint16 port;
+    quint16 port;
 
     void sendBlocks(QTcpSocket* socket, qint8 mode, QByteArray& message);
 };

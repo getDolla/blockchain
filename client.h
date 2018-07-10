@@ -69,7 +69,7 @@ class Client : public QDialog
 
     friend class MainWindow;
 public:
-    Client();
+    Client(quint16 port);
     ~Client();
 
 signals:
@@ -77,6 +77,8 @@ signals:
     void addConnection(const QString& ip, quint16 port);
 
 private:
+    quint16 serverPort;
+
     Package talk(const QString &hostName, quint16 port, qint8 theMode, const QByteArray& theData);
 };
 

@@ -19,7 +19,8 @@
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent), ui(new Ui::MainWindow),
     _nIndex(0), mode(2), serverWait(false),
-    bChain(new Blockchain<File>()), server(new Server(this, bChain, &connections, &serverWait))
+    bChain(new Blockchain<File>()), server(new Server(this, bChain, &connections, &serverWait)),
+    client((quint16) server->getPort())
 {
     ui->setupUi(this);
 

@@ -55,7 +55,7 @@
  * -100 : Error has occured
 */
 
-Client::Client() {}
+Client::Client(quint16 port): serverPort(port) {}
 
 Client::~Client() {}
 
@@ -78,6 +78,7 @@ Package Client::talk(const QString &hostName, quint16 port, qint8 theMode, const
     QByteArray block;
     QDataStream out(&block, QIODevice::WriteOnly);
     out << (quint64) 0;
+    out << serverPort;
     out << theMode;
 
     cerr << QString::number(theMode).toStdString() << endl;
