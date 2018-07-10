@@ -329,22 +329,17 @@ void MainWindow::newBlockchain(const Blockchain<File>& importedChain, const QByt
     QByteArray importedHash = QCryptographicHash::hash(packet, QCryptographicHash::Sha3_512).toHex();
     QByteArray commonHash = checkForUpdates();
 
-    if (commonHash == importedHash) {
+    if ((commonHash == importedHash) && (hashMap[commonHash].size() > 1)) {
         bChain->operator =(importedChain);
-        return;
     }
-
-    if (importedHash == bChain->hash()) {
-        return;
-    }
-
-    if (!commonHash.isEmpty()) {
+    else if (!commonHash.isEmpty()) {
         Connection commonServer = hashMap[commonHash].back();
         mode = 0;
         setUpConnection(commonServer.ipAddr, commonServer.portAddr);
     }
 
     mode = 2;
+    ui->label->setText("Blockchain Length: " + QString::number(bChain->length()));
 }
 
 QByteArray MainWindow::checkForUpdates() {
