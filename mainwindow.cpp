@@ -32,6 +32,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(server, SIGNAL(updateTextBrowser(QString)), this, SLOT(addText(QString)));
     connect(server, SIGNAL(error(int,QString,QString,quint16)), this, SLOT(displayError(int,QString,QString,quint16)));
     connect(server, SIGNAL(updateBlockchain(Blockchain<File>, QByteArray)), this, SLOT(newBlockchain(Blockchain<File>, QByteArray)));
+    connect(server, SIGNAL(lengthAdded()), this, SLOT(updateLengthDisplay()));
 
     connect(&client, SIGNAL(error(int,QString,QString,quint16)), this, SLOT(displayError(int,QString,QString,quint16)));
     connect(&client, SIGNAL(addConnection(QString,quint16)), this, SLOT(saveConnection(QString,quint16)));
@@ -409,4 +410,8 @@ void MainWindow::displayError(int socketError, const QString &message, const QSt
             return;
         }
     }
+}
+
+void MainWindow::updateLengthDisplay() {
+    ui->label->setText("Blockchain Length: " + QString::number(bChain->length()));
 }

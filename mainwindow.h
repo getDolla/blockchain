@@ -72,6 +72,8 @@ private slots:
 
     void newBlockchain(const Blockchain<File>& importedChain, const QByteArray& packet);
 
+    void updateLengthDisplay();
+
 private:
     Ui::MainWindow *ui;
     Server* server;

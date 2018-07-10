@@ -200,6 +200,7 @@ void Server::readBlocks() {
                 if(!(blockChainPtr->addBlocks(packet))) {
                     emit updateTextBrowser("There were errors <b>from the connected node:</b><br>" + (blockChainPtr->getErrors()));
                 }
+                emit lengthAdded();
                 mode = -1;
             }
             else {
