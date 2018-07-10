@@ -85,7 +85,7 @@ Dialog::Dialog(const vector<Connection>& connections):
     portLineEdit->setFocus();
 
     for(const Connection& c : connections) {
-        hostList->append("<b>IP Address:</b> " + c.ipAddr + "<br><b>Port:</b> " + QString::number((quint16) c.portAddr) + "<br>");
+        hostList->append("<b>IP Address:</b> " + c.ipAddr + "<br><b>Port:</b> " + QString::number(c.portAddr) + "<br>");
     }
 
     connect(button, SIGNAL(clicked()), this, SLOT(requestBlockchain()));
@@ -122,6 +122,6 @@ void Dialog::enableButton()
 void Dialog::updateServerLists(const std::vector<Connection>& hosts) {
     hostList->clear();
     for(const Connection& c : hosts) {
-        hostList->append("<b>IP Address:</b> " + c.ipAddr + "<br><b>Port:</b> " + QString::number((quint16) c.portAddr) + "<br>");
+        hostList->append("<b>IP Address:</b> " + c.ipAddr + "<br><b>Port:</b> " + QString::number(c.portAddr) + "<br>");
     }
 }

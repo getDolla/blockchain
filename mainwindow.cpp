@@ -20,13 +20,13 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent), ui(new Ui::MainWindow),
     _nIndex(0), mode(2), serverWait(false),
     bChain(new Blockchain<File>()), server(new Server(this, bChain, &connections, &serverWait)),
-    client((quint16) server->getPort())
+    client(server->getPort())
 {
     ui->setupUi(this);
 
     ui->label->setText("Blockchain Length: " + QString::number(bChain->length()));
     ui->ipLabel->setText("IP Address: " + server->getIpAddress());
-    ui->portLabel->setText("Port: " + QString::number((quint16) (server->getPort())));
+    ui->portLabel->setText("Port: " + QString::number(server->getPort()));
 
     connect(server, SIGNAL(addConnection(QString,quint16)), this, SLOT(saveConnection(QString,quint16)));
     connect(server, SIGNAL(updateTextBrowser(QString)), this, SLOT(addText(QString)));
@@ -391,19 +391,19 @@ void MainWindow::displayError(int socketError, const QString &message, const QSt
     switch (socketError) {
     case QAbstractSocket::HostNotFoundError:
         QMessageBox::information(this, tr("Blockchain Client"),
-                                 ("IP: " + ip + " Port: " + QString::number((quint16) port) + " not found. Please check the " +
+                                 ("IP: " + ip + " Port: " + QString::number(port) + " not found. Please check the " +
                                     "host and port settings."));
         break;
     case QAbstractSocket::ConnectionRefusedError:
         QMessageBox::information(this, tr("Blockchain Client"),
-                                 ("The connection was refused by: IP: " + ip + " Port: " + QString::number((quint16) port) +
+                                 ("The connection was refused by: IP: " + ip + " Port: " + QString::number(port) +
                                     ". Make sure the blockchain server is running, " +
                                     "and check that the host name and port " +
                                     "settings are correct."));
         break;
     default:
         QMessageBox::information(this, tr("Blockchain Client"),
-                                 ("Attempted connection: IP: " + ip + " Port: " + QString::number((quint16) port) + ". The following error occurred: %1.")
+                                 ("Attempted connection: IP: " + ip + " Port: " + QString::number(port) + ". The following error occurred: %1.")
                                  .arg(message));
     }
 

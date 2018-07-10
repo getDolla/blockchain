@@ -166,7 +166,7 @@ void Server::readBlocks() {
 
     QString text = "Connected to:<br>";
     text += "<b>IP Address:</b> " + peerAddress + "<br><b>Port:</b> ";
-    text += QString::number((quint16) otherPort) + "<br>";
+    text += QString::number(otherPort) + "<br>";
 
     emit updateTextBrowser(text);
 
