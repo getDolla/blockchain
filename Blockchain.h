@@ -20,7 +20,7 @@
 
 #include "Block.h"
 
-//#include <iostream>
+#include <iostream>
 //#include <string>
 using namespace std;
 
@@ -50,6 +50,7 @@ public:
         readFromStream(blockStr);
 
         blockchain.close();
+        cerr << "In constructor... _nIndex: " << _nIndex << endl;
     }
 
     Blockchain(const QByteArray& chainString):_nDifficulty(2), _nIndex(0) {
@@ -66,6 +67,7 @@ public:
             _nIndex = rhs._nIndex;
             errors = rhs.errors;
             _vChain = rhs._vChain;
+            cerr << "In operator=... _nIndex: " << _nIndex << endl;
         }
         return *this;
     }
@@ -82,13 +84,15 @@ public:
 
     bool addBlocks(const QByteArray& text) {
         QTextStream blockStr(text);
+//        cout << text.toStdString() << endl;
+//        cout << "_nIndex: " << _nIndex << endl;
 
         //Block attributes
-        unsigned int ind;
+        quint64 ind;
         QString prevHash;
         quint64 datTime;
         QByteArray decode64;
-        unsigned int nonce;
+        quint64 nonce;
 
         size_t counter = 0;
 
@@ -97,14 +101,26 @@ public:
 
         //gets the genesis block:
         while (!(blockStr >> ind >> prevHash >> datTime >> decode64 >> nonce).atEnd()) {
+            cerr << "In the while loop!" << endl;
+            cerr << "ind: " << ind << endl;
+            cerr << "prevHash: " << prevHash.toStdString() << endl;
+            cerr << "datTime: " << datTime << endl;
+            cerr << "decode64: " << decode64.toStdString() << endl;
+            cerr << "nonce: " << nonce << endl;
+            cerr << "_nIndex: " << _nIndex << endl;
             if (ind != _nIndex) {
+                cerr << "inside the if statement!\n";
                 T dataIn = (QByteArray::fromBase64(decode64));
-                // cout << "decoded: " << base64_decode(decode64) << endl;
+                 cout << "decoded:\n" << QByteArray::fromBase64(decode64).toStdString() << endl;
+                 cout << ":end decode" << endl;
 
                 Block<T> block(ind, prevHash, datTime, dataIn, nonce);
                 blockStr >> hash;
+                cout << "hash: " << hash.toStdString() << endl;
+                cout << "block hash: " << block.sHash.toStdString() << endl;
 
                 if (block.sHash != hash) {
+                    cerr << "In error statement!\n";
                     errors += "Hash inconsistency at block " + QString::number(ind) + "!\n";
                     save(_vChain.size() - counter);
                     return false;
@@ -189,11 +205,11 @@ public:
         return "Blockchain is up to date with connected node :)";
     }
 
-    T viewAt(unsigned long index) {
+    T viewAt(quint64 index) {
         return _vChain[index].getData();
     }
 
-    unsigned long length() const {
+    quint64 length() const {
         return _vChain.size();
     }
 
@@ -222,20 +238,22 @@ public:
         return QCryptographicHash::hash(content, QCryptographicHash::Sha3_512).toHex();
     }
 
+    quint64 getInd() const { return _nIndex; }
+
 private:
-    unsigned int _nDifficulty;
-    unsigned long _nIndex;
+    quint64 _nDifficulty;
+    quint64 _nIndex;
     QString errors;
     vector<Block<T>> _vChain;
 
     template <typename S>
     bool readFromStream(S& chainStr, bool flag = true) {
         //Block attributes
-        unsigned int ind;
+        quint64 ind;
         QString prevHash;
         quint64 datTime;
         QByteArray decode64;
-        unsigned int nonce;
+        quint64 nonce;
 
         //for checking
         QString hash;
@@ -252,10 +270,10 @@ private:
 
             if (block.sHash != hash) {
                 errors += "Hash inconsistency at genesis block!\n";
-//                cerr << ind << endl;
-//                cerr << block.getDatTime() << endl;
-//                cerr << nonce << endl;
-//                cerr << block.sHash.toStdString() << "\n" << hash.toStdString() << endl;
+                cerr << ind << endl;
+                cerr << block.getDatTime() << endl;
+                cerr << nonce << endl;
+                cerr << block.sHash.toStdString() << "\n" << hash.toStdString() << endl;
 
                 if (flag) {
                     QMessageBox messageBox;
@@ -267,6 +285,7 @@ private:
             }
 
             _nIndex = ind;
+            cerr << "in readfromstream, _nIndex: " << _nIndex << endl;
             _vChain.push_back(block);
 
             //gets other blocks
@@ -280,12 +299,12 @@ private:
                     chainStr >> hash;
                     if (block.sHash != hash) {
                         errors += "Hash inconsistency at block " + QString::number(ind) + "!\n";
-    //                    cerr << "Hash inconsistency at block " << ind << "!" << endl;
-    //                    cerr << ind << endl;
-    //                    cerr << block.sPrevHash.toStdString() << endl;
-    //                                    cerr << block.getDatTime() << endl;
-    //                                    cerr << nonce << endl;
-    //                                    cerr << block.sHash.toStdString() << "\n" << hash.toStdString() << endl;
+                        cerr << "Hash inconsistency at block " << ind << "!" << endl;
+                        cerr << ind << endl;
+                        cerr << block.sPrevHash.toStdString() << endl;
+                                        cerr << block.getDatTime() << endl;
+                                        cerr << nonce << endl;
+                                        cerr << block.sHash.toStdString() << "\n" << hash.toStdString() << endl;
 
                         if (flag) {
                             QMessageBox messageBox;
@@ -298,6 +317,7 @@ private:
 
                     _nIndex = ind;
                     _vChain.push_back(block);
+                    cerr << "in readfromstream, _nIndex: " << _nIndex << endl;
                 }
             }
         }
@@ -306,6 +326,7 @@ private:
             return true;
         }
 
+        cerr << "(before return) in readfromstream, _nIndex: " << _nIndex << endl;
         return true;
     }
 };

@@ -18,7 +18,7 @@
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent), ui(new Ui::MainWindow),
-    _nIndex(0), mode(2), serverWait(false),
+    spIndex(0), mode(2), serverWait(false), closing(false),
     bChain(new Blockchain<File>()), server(new Server(this, bChain, &connections, &serverWait)),
     client(server->getPort())
 {
@@ -48,11 +48,16 @@ MainWindow::MainWindow(QWidget *parent) :
         ui->Store->setEnabled(false);
         ui->UpdateBlockchain->setEnabled(false);
     }
+
+    cerr << "in MainWindow(), checking index... " << bChain->getInd() << endl;
+    cerr << "this: " << this << endl;
+    cerr << "bChain: " << bChain << endl;
  }
 
 MainWindow::~MainWindow()
 {
     if (mode) {
+        closing = true;
         on_UpdateBlockchain_clicked();
     }
 
@@ -63,12 +68,16 @@ MainWindow::~MainWindow()
 
 void MainWindow::updateBlockchain() {
     QByteArray commonHash = checkForUpdates();
-    if (!commonHash.isEmpty()) {
+    cerr << "In updateBlockchain(): " << endl;
+    cerr << commonHash.toStdString() << endl;
+    cerr << bChainHash.toStdString() << endl;
+    if ((commonHash != bChainHash) && ((hashMap[commonHash].size() > 1) || (!mode))) {
         Connection commonServer = hashMap[commonHash].back();
         mode = 0;
         setUpConnection(commonServer.ipAddr, commonServer.portAddr);
     }
     bChain->save();
+    bChainHash = bChain->hash();
 }
 
 void MainWindow::on_UpdateBlockchain_clicked()
@@ -116,10 +125,10 @@ void MainWindow::on_Store_clicked()
 
         serverWait = true;
 
-        mode = 3;
         updateBlockchain();
 
         QString hash = bChain->addBlock(File(fileName, content));
+        bChainHash = bChain->hash();
 
         QString path = QCoreApplication::applicationDirPath() + "/blockchain";
         QFile blockchain(path);
@@ -141,6 +150,8 @@ void MainWindow::on_Store_clicked()
         cerr << data.toStdString() << endl;
         blockchain.close();
 
+        cerr << "in store(), checking index... " << bChain->getInd() << endl;
+
         hashMap.clear();
         size_t ctr = 0;
         while (ctr < connections.size()) {
@@ -150,8 +161,14 @@ void MainWindow::on_Store_clicked()
                 if (fromServer.mode == -1) {
                     hashMap[fromServer.data].push_back(Connection(connections[ctr].ipAddr,connections[ctr].portAddr));
                 }
+                else {
+                    cerr << "fromServer.mode: " << fromServer.mode << endl;
+                }
                 ++ctr;
-            } catch(...) { cerr << "[checkforupdates]: caught error from setUpConnection." << endl; }
+            } catch(...) {
+                cerr << "[checkforupdates]: caught error from setUpConnection." << endl;
+                removeConnectection(connections[ctr].ipAddr, connections[ctr].portAddr);
+            }
         }
 
         ui->textBrowser->append("Block mined: " + hash + "\n");
@@ -179,17 +196,17 @@ void MainWindow::on_Save_clicked()
     ui->Store->setEnabled(false);
     ui->UpdateBlockchain->setEnabled(false);
 
-    _nIndex = ui->spinBox_1->value();
+    spIndex = ui->spinBox_1->value();
 
 
-    ui->textBrowser->append("Index " + QString::number(_nIndex) + " selected.\n");
+    ui->textBrowser->append("Index " + QString::number(spIndex) + " selected.\n");
 
-    File file = bChain->viewAt(_nIndex);
+    File file = bChain->viewAt(spIndex);
     QString fileName = (file.getFileName() != "") ? file.getFileName() :
-                      (QString::number(_nIndex) + ".txt");
+                      (QString::number(spIndex) + ".txt");
 
     QString selectedFile = QFileDialog::getSaveFileName(this,
-                                                        tr("Save Address Book"), fileName,
+                                                        tr("Save File"), fileName,
                                                         tr("All Files (*)"));
 
     if (!selectedFile.isEmpty()) {
@@ -215,11 +232,11 @@ void MainWindow::on_View_clicked()
         ui->textBrowser->append("");
         return;
     }
-    _nIndex = ui->spinBox_2->value();
+    spIndex = ui->spinBox_2->value();
 
 
-    ui->textBrowser->append("Index " + QString::number(_nIndex) + " selected.\n");
-    File file = bChain->viewAt(_nIndex);
+    ui->textBrowser->append("Index " + QString::number(spIndex) + " selected.\n");
+    File file = bChain->viewAt(spIndex);
 
     if (file.getFileName() != "") {
         ui->textBrowser->append("<b>Filename:</b>");
@@ -244,6 +261,8 @@ void MainWindow::on_Connect_clicked()
     connect(&dialog, SIGNAL(selectedSettings(QString, quint16)), this, SLOT(setUpConnection(QString, quint16)));
     connect(this, SIGNAL(addNewHost(vector<Connection>)), &dialog, SLOT(updateServerLists(vector<Connection>)));
 
+    bChainHash = bChain->hash();
+
     dialog.exec();
 
     serverWait = false;
@@ -259,7 +278,7 @@ void MainWindow::setUpConnection(const QString &ip, quint16 port) {
     QByteArray data;
     if (mode == 2) {
         cerr << "mode == 2" << endl;
-        data = bChain->hash();
+        data = bChainHash;
     }
     else if (mode > 2) {
         QString path = QCoreApplication::applicationDirPath() + "/blockchain";
@@ -292,7 +311,7 @@ void MainWindow::setUpConnection(const QString &ip, quint16 port) {
     try {
         Package fromServer = client.talk(ip, port, mode, data);
         if (!fromServer.mode) {
-            return;
+            hashMap[bChainHash].push_back(Connection(ip,port));
         }
         else if (fromServer.mode == -1) {
             hashMap[fromServer.data].push_back(Connection(ip,port));
@@ -311,32 +330,32 @@ void MainWindow::setUpConnection(const QString &ip, quint16 port) {
                 setUpConnection(ip, port);
             }
         }
+        else {
+            cerr << "fromServer.mode: " << fromServer.mode << endl;
+        }
     } catch (...) {
         cerr << "Error connecting..." << endl;
-
-        for(size_t i = 0; i < connections.size(); ++i) {
-            if ((connections[i].ipAddr == ip) && (connections[i].portAddr == port)) {
-                connections[i] = connections.back();
-                connections.pop_back();
-                throw connection_error();
-            }
-        }
-
-        throw connection_error();
+        removeConnectection(ip, port);
     }
 }
 
 void MainWindow::newBlockchain(const Blockchain<File>& importedChain, const QByteArray &packet) {
+    cerr << "In newBlockchain" << endl;
     QByteArray importedHash = QCryptographicHash::hash(packet, QCryptographicHash::Sha3_512).toHex();
     QByteArray commonHash = checkForUpdates();
 
-    if ((commonHash == importedHash) && (hashMap[commonHash].size() > 1)) {
-        bChain->operator =(importedChain);
-    }
-    else if (!commonHash.isEmpty()) {
-        Connection commonServer = hashMap[commonHash].back();
-        mode = 0;
-        setUpConnection(commonServer.ipAddr, commonServer.portAddr);
+    cerr << "ImportedHash: " << importedHash.toStdString() << endl;
+    cerr << "CommonHash: " << commonHash.toStdString() << endl;
+
+    if ((commonHash != bChainHash) && ((hashMap[commonHash].size() > 1) || (!mode))) {
+        if (commonHash == importedHash) {
+            bChain->operator =(importedChain);
+        }
+        else if (!commonHash.isEmpty()) {
+            Connection commonServer = hashMap[commonHash].back();
+            mode = 0;
+            setUpConnection(commonServer.ipAddr, commonServer.portAddr);
+        }
     }
 
     mode = 2;
@@ -346,13 +365,16 @@ void MainWindow::newBlockchain(const Blockchain<File>& importedChain, const QByt
 QByteArray MainWindow::checkForUpdates() {
     hashMap.clear();
     size_t ctr = 0;
+    bChainHash = bChain->hash();
 
     while (ctr < connections.size()) {
         try {
             mode = 1;
             setUpConnection(connections[ctr].ipAddr, connections[ctr].portAddr);
             ++ctr;
-        } catch(...) { cerr << "[checkforupdates]: caught error from setUpConnection." << endl; }
+        } catch(...) {
+            cerr << "[checkforupdates]: caught error from setUpConnection." << endl;
+            removeConnectection(connections[ctr].ipAddr, connections[ctr].portAddr); }
     }
 
     QByteArray commonHash;
@@ -375,6 +397,11 @@ void MainWindow::saveConnection(const QString& ip, quint16 port) {
     }
 
     connections.push_back(Connection(ip, port));
+    QString text = "Connected to:<br>";
+    text += "<b>IP Address:</b> " + ip + "<br><b>Port:</b> ";
+    text += QString::number(port) + "<br>";
+    ui->textBrowser->append(text);
+
     emit addNewHost(connections);
 }
 
@@ -384,32 +411,43 @@ void MainWindow::addText(const QString& updates) {
 
 void MainWindow::displayError(int socketError, const QString &message, const QString& ip, quint16 port)
 {
-    switch (socketError) {
-    case QAbstractSocket::HostNotFoundError:
-        QMessageBox::information(this, tr("Blockchain Client"),
-                                 ("IP: " + ip + " Port: " + QString::number(port) + " not found. Please check the " +
-                                    "host and port settings."));
-        break;
-    case QAbstractSocket::ConnectionRefusedError:
-        QMessageBox::information(this, tr("Blockchain Client"),
-                                 ("The connection was refused by: IP: " + ip + " Port: " + QString::number(port) +
-                                    ". Make sure the blockchain server is running, " +
-                                    "and check that the host name and port " +
-                                    "settings are correct."));
-        break;
-    default:
-        QMessageBox::information(this, tr("Blockchain Client"),
-                                 ("Attempted connection: IP: " + ip + " Port: " + QString::number(port) + ". The following error occurred: %1.")
-                                 .arg(message));
+    if (!closing) {
+        QMessageBox messageBox;
+        switch (socketError) {
+        case QAbstractSocket::HostNotFoundError:
+            messageBox.information(this, tr("Blockchain Client"),
+                                     ("IP: " + ip + " Port: " + QString::number(port) + " not found. Please check the " +
+                                        "host and port settings."));
+            break;
+        case QAbstractSocket::ConnectionRefusedError:
+            messageBox.information(this, tr("Blockchain Client"),
+                                     ("The connection was refused by: IP: " + ip + " Port: " + QString::number(port) +
+                                        ". Make sure the blockchain server is running, " +
+                                        "and check that the host name and port " +
+                                        "settings are correct."));
+            break;
+        default:
+            messageBox.information(this, tr("Blockchain Client"),
+                                     ("Attempted connection: IP: " + ip + " Port: " + QString::number(port) + ". The following error occurred: %1.")
+                                     .arg(message));
+        }
     }
 
+    cerr << "still here in display error...\n";
+    removeConnectection(ip, port);
+}
+
+bool MainWindow::removeConnectection(const QString& ip, quint16 port) {
     for(size_t i = 0; i < connections.size(); ++i) {
         if ((connections[i].ipAddr == ip) && (connections[i].portAddr == port)) {
             connections[i] = connections.back();
             connections.pop_back();
-            return;
+            cerr << "removing connection...\n";
+            return true;
         }
     }
+
+    return false;
 }
 
 void MainWindow::updateLengthDisplay() {

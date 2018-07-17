@@ -26,7 +26,6 @@ class MainWindow;
 }
 
 struct Package;
-struct connection_error;
 class Server;
 
 struct Connection {
@@ -75,18 +74,27 @@ private slots:
     void updateLengthDisplay();
 
 private:
+    //order of declation = order of being initialized!
     Ui::MainWindow *ui;
-    Server* server;
-    Client client;
     Blockchain<File>* bChain;
+
     vector<Connection> connections;
     map<QByteArray, vector<Connection>> hashMap;
-    unsigned int _nIndex;
-    qint8 mode;
+
+    QByteArray bChainHash;
+
     bool serverWait;
+    bool closing;
+    quint64 spIndex;
+    qint8 mode;
+
+    Server* server;
+    Client client;
 
     //returns most common hash (or none if blockchain is already up to date / no connections available)
     QByteArray checkForUpdates();
+
+    bool removeConnectection(const QString& ip, quint16 port);
 };
 
 #endif // MAINWINDOW_H

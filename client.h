@@ -46,7 +46,6 @@
 #include <QByteArray>
 #include <QString>
 
-#include <exception>
 #include <iostream>
 using namespace std;
 
@@ -55,13 +54,6 @@ struct Package {
     qint8 mode;
     Package(const QByteArray& theData, qint8 theMode): data(theData), mode(theMode) {}
 };
-
-struct connection_error : public exception {
-    const char * what () const throw () {
-        return "Failed to Connect";
-    }
-};
-
 
 class Client : public QDialog
 {

@@ -68,6 +68,9 @@ Server::Server(MainWindow* mainW, Blockchain<File>* chainPtr, const vector<Conne
     }
 
     connect(tcpServer, SIGNAL(newConnection()), this, SLOT(handleConnection()));
+    cerr << "In server(), checking on index... " << blockChainPtr->getInd() << endl;
+    cerr << "In server(), mainW: " << mainWptr << endl;
+    cerr << "In server(), blockChainptr: " << blockChainPtr << endl;
 }
 
 Server::~Server() {
@@ -124,6 +127,7 @@ void Server::handleConnection() {
             cerr << "In handleConnection\n";
 //            if (!(*waitFlag)) {
                 cerr << "wait flag off" << endl;
+                cerr << "In handleConnection(), checking on index... " << blockChainPtr->getInd() << endl;
                 QTcpSocket* socket = tcpServer->nextPendingConnection();
                 connect(socket, SIGNAL(readyRead()), this, SLOT(readBlocks()));
                 connect(socket, SIGNAL(disconnected()), socket, SLOT(deleteLater()));
@@ -164,11 +168,11 @@ void Server::readBlocks() {
 
     emit addConnection(peerAddress, otherPort);
 
-    QString text = "Connected to:<br>";
-    text += "<b>IP Address:</b> " + peerAddress + "<br><b>Port:</b> ";
-    text += QString::number(otherPort) + "<br>";
+//    QString text = "Connected to:<br>";
+//    text += "<b>IP Address:</b> " + peerAddress + "<br><b>Port:</b> ";
+//    text += QString::number(otherPort) + "<br>";
 
-    emit updateTextBrowser(text);
+//    emit updateTextBrowser(text);
 
     qint8 mode;
     in >> mode;
@@ -193,10 +197,13 @@ void Server::readBlocks() {
 
         if (mode == 2) {
                 content = blockChainPtr->hash();
+                cerr << "In mode == 2, checking on index... " << blockChainPtr->getInd() << endl;
                 mode = (packet == content) ? 0 : -2;
                 cerr << QString::number(mode).toStdString() << endl;
             }
             else if (mode == 3) {
+                cerr << "In mode == 3\n";
+                cerr << "checking on index... " << blockChainPtr->getInd() << endl;
                 if(!(blockChainPtr->addBlocks(packet))) {
                     emit updateTextBrowser("There were errors <b>from the connected node:</b><br>" + (blockChainPtr->getErrors()));
                 }
@@ -243,6 +250,7 @@ void Server::readBlocks() {
 
     sendBlocks(socket, mode, content);
     cerr << "gonna disconnect this bad boy\n";
+    cerr << "checking on index... " << blockChainPtr->getInd() << endl;
     socket->disconnectFromHost();
     cerr << "bad boy disconnected\n";
 }

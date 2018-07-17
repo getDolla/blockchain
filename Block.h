@@ -26,18 +26,18 @@ public:
     QString sHash;
     QString sPrevHash;
 
-    Block(unsigned int nIndexIn, const T& dataIn) : _nIndex(nIndexIn), _data(dataIn), _nNonce(0), _tTime(time(0))
+    Block(quint64 nIndexIn, const T& dataIn) : _nIndex(nIndexIn), _data(dataIn), _nNonce(0), _tTime(time(0))
     {
         sHash = _calculateHash();
     }
 
-    Block(unsigned int ind, const QString& prevHash, const quint64& datTime, const T& dataIn, unsigned int nonce) :
+    Block(quint64 ind, const QString& prevHash, const quint64& datTime, const T& dataIn, quint64 nonce) :
     _nIndex(ind), sPrevHash(prevHash), _data(dataIn), _nNonce(nonce), _tTime(datTime)
     {
         sHash = _calculateHash();
     }
 
-    QString mineBlock(unsigned int nDifficulty)
+    QString mineBlock(quint64 nDifficulty)
     {
         char cstr[nDifficulty + 1];
         for (size_t i = 0; i < nDifficulty; ++i)
@@ -72,12 +72,12 @@ public:
         return _data;
     }
 
-    unsigned int getIndex() const
+    quint64 getIndex() const
     {
         return _nIndex;
     }
 
-    unsigned int getNonce() const
+    quint64 getNonce() const
     {
         return _nNonce;
     }
@@ -88,8 +88,8 @@ public:
     }
 
 private:
-    unsigned int _nIndex;
-    unsigned int _nNonce;
+    quint64 _nIndex;
+    quint64 _nNonce;
     T _data;
     time_t _tTime;
 };
