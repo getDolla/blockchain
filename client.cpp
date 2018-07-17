@@ -72,7 +72,7 @@ Package Client::talk(const QString &hostName, quint16 port, qint8 theMode, const
     if (!socket.waitForConnected(Timeout)) {
         emit error(socket.error(), socket.errorString(), hostName, port);
         cerr << "throwing error in client...\n";
-        throw -100;
+        return Package("Error has occured", -100);
     }
     emit addConnection(hostName, port);
 
@@ -100,7 +100,7 @@ Package Client::talk(const QString &hostName, quint16 port, qint8 theMode, const
     if (!socket.waitForBytesWritten(Timeout)) {
         emit error(socket.error(), socket.errorString(), hostName, port);
         cerr << "throwing error in client...\n";
-        throw -100;
+        return Package("Error has occured", -100);
     }
 
     while (socket.bytesAvailable() < (quint64)sizeof(quint64)) {
@@ -108,7 +108,7 @@ Package Client::talk(const QString &hostName, quint16 port, qint8 theMode, const
             cerr << "In the socket.bytesAvail loop (3rd one)\n";
             emit error(socket.error(), socket.errorString(), hostName, port);
             cerr << "throwing error in client...\n";
-            throw -100;
+            return Package("Error has occured", -100);
         }
     }
     cerr << "out of the socket.bytesAvail loop (3rd one)\n";
@@ -122,7 +122,7 @@ Package Client::talk(const QString &hostName, quint16 port, qint8 theMode, const
         if (!socket.waitForReadyRead(Timeout)) {
             emit error(socket.error(), socket.errorString(), hostName, port);
             cerr << "throwing error in client...\n";
-            throw -100;
+            return Package("Error has occured", -100);
         }
     }
 

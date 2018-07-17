@@ -67,7 +67,7 @@ private slots:
 
     void displayError(int socketError, const QString &message, const QString& ip, quint16 port);
 
-    void setUpConnection(const QString& ip, quint16 port);
+    bool setUpConnection(const QString& ip, quint16 port);
 
     void newBlockchain(const Blockchain<File>& importedChain, const QByteArray& packet);
 

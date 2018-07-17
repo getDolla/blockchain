@@ -155,19 +155,14 @@ void MainWindow::on_Store_clicked()
         hashMap.clear();
         size_t ctr = 0;
         while (ctr < connections.size()) {
-            try {
-                Package fromServer = client.talk(connections[ctr].ipAddr, connections[ctr].portAddr, 3, data);
+            Package fromServer = client.talk(connections[ctr].ipAddr, connections[ctr].portAddr, 3, data);
 
-                if (fromServer.mode == -1) {
-                    hashMap[fromServer.data].push_back(Connection(connections[ctr].ipAddr,connections[ctr].portAddr));
-                }
-                else {
-                    cerr << "fromServer.mode: " << fromServer.mode << endl;
-                }
+            if (fromServer.mode == -1) {
+                hashMap[fromServer.data].push_back(Connection(connections[ctr].ipAddr,connections[ctr].portAddr));
                 ++ctr;
-            } catch(...) {
-                cerr << "[checkforupdates]: caught error from setUpConnection." << endl;
-                removeConnectection(connections[ctr].ipAddr, connections[ctr].portAddr);
+            }
+            else {
+                cerr << "fromServer.mode: " << fromServer.data.toStdString() << endl;
             }
         }
 
@@ -273,7 +268,7 @@ void MainWindow::on_Connect_clicked()
 }
 
 
-void MainWindow::setUpConnection(const QString &ip, quint16 port) {
+bool MainWindow::setUpConnection(const QString &ip, quint16 port) {
     cerr << "In setUpConnection\n";
     QByteArray data;
     if (mode == 2) {
@@ -308,35 +303,32 @@ void MainWindow::setUpConnection(const QString &ip, quint16 port) {
         blockchain.close();
     }
 
-    try {
-        Package fromServer = client.talk(ip, port, mode, data);
-        if (!fromServer.mode) {
-            hashMap[bChainHash].push_back(Connection(ip,port));
-        }
-        else if (fromServer.mode == -1) {
-            hashMap[fromServer.data].push_back(Connection(ip,port));
-        }
-        else if (fromServer.mode == -2) {
-            Blockchain<File> importedChain = fromServer.data;
-            QString errors = importedChain.getErrors();
+    Package fromServer = client.talk(ip, port, mode, data);
+    if (!fromServer.mode) {
+        hashMap[bChainHash].push_back(Connection(ip,port));
+    }
+    else if (fromServer.mode == -1) {
+        hashMap[fromServer.data].push_back(Connection(ip,port));
+    }
+    else if (fromServer.mode == -2) {
+        Blockchain<File> importedChain = fromServer.data;
+        QString errors = importedChain.getErrors();
 
-            if (errors.isEmpty()) {
-                newBlockchain(importedChain, fromServer.data);
-            }
-            else {
-                ui->textBrowser->append("There were errors <b>from the connected node:</b><br>" + errors);
-                ui->textBrowser->append("Sending blockchain on this computer to connected node...");
-                mode = 4;
-                setUpConnection(ip, port);
-            }
+        if (errors.isEmpty()) {
+            newBlockchain(importedChain, fromServer.data);
         }
         else {
-            cerr << "fromServer.mode: " << fromServer.mode << endl;
+            ui->textBrowser->append("There were errors <b>from the connected node:</b><br>" + errors);
+            ui->textBrowser->append("Sending blockchain on this computer to connected node...");
+            mode = 4;
+            setUpConnection(ip, port);
         }
-    } catch (...) {
-        cerr << "Error connecting..." << endl;
-        removeConnectection(ip, port);
     }
+    else if (fromServer.mode == -100) {
+        cerr << "fromServer.mode: " << fromServer.data.toStdString() << endl;
+        return false;
+    }
+    return true;
 }
 
 void MainWindow::newBlockchain(const Blockchain<File>& importedChain, const QByteArray &packet) {
@@ -368,13 +360,10 @@ QByteArray MainWindow::checkForUpdates() {
     bChainHash = bChain->hash();
 
     while (ctr < connections.size()) {
-        try {
-            mode = 1;
-            setUpConnection(connections[ctr].ipAddr, connections[ctr].portAddr);
-            ++ctr;
-        } catch(...) {
-            cerr << "[checkforupdates]: caught error from setUpConnection." << endl;
-            removeConnectection(connections[ctr].ipAddr, connections[ctr].portAddr); }
+           mode = 1;
+           if (setUpConnection(connections[ctr].ipAddr, connections[ctr].portAddr)) {
+                ++ctr;
+           }
     }
 
     QByteArray commonHash;
