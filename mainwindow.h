@@ -4,6 +4,7 @@
 #include <QFile>
 #include <QMessageBox>
 #include <QDataStream>
+#include <QTextStream>
 #include <QFileDialog>
 #include <QString>
 #include <QCryptographicHash>

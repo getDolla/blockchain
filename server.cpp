@@ -140,12 +140,12 @@ void Server::handleConnection() {
 
 void Server::readBlocks() {
     QTcpSocket* socket = static_cast<QTcpSocket*>(sender());
-    const int Timeout = 20 * 1000;
+    const int Timeout = 8 * 1000;
 
     QString peerAddress = (socket->peerAddress().toString().contains("::ffff:")) ? socket->peerAddress().toString().mid(7) : socket->peerAddress().toString();
 
     while (socket->bytesAvailable() < (quint64)sizeof(quint64)) {
-        if (!(socket->waitForReadyRead(Timeout))) {
+        if (!(socket->waitForReadyRead(2 * Timeout))) {
             emit error(socket->error(), socket->errorString(), peerAddress, socket->peerPort());
             return;
         }
@@ -204,6 +204,11 @@ void Server::readBlocks() {
             else if (mode == 3) {
                 cerr << "In mode == 3\n";
                 cerr << "checking on index... " << blockChainPtr->getInd() << endl;
+
+                QString text = "New blocks received from: ";
+                text += "<b>IP Address:</b> " + peerAddress + " <b>Port:</b> ";
+                text +=  QString::number(otherPort) + "<br>";
+                emit updateTextBrowser(text);
                 if(!(blockChainPtr->addBlocks(packet))) {
                     emit updateTextBrowser("There were errors <b>from the connected node:</b><br>" + (blockChainPtr->getErrors()));
                 }

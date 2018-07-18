@@ -61,7 +61,7 @@ Client::~Client() {}
 
 Package Client::talk(const QString &hostName, quint16 port, qint8 theMode, const QByteArray& theData)
 {
-    const int Timeout = 20 * 1000;
+    const int Timeout = 8 * 1000;
 
     QTcpSocket socket;
     socket.connectToHost(hostName, port);
@@ -104,7 +104,7 @@ Package Client::talk(const QString &hostName, quint16 port, qint8 theMode, const
     }
 
     while (socket.bytesAvailable() < (quint64)sizeof(quint64)) {
-        if (!socket.waitForReadyRead(Timeout)) {
+        if (!socket.waitForReadyRead(2 * Timeout)) {
             cerr << "In the socket.bytesAvail loop (3rd one)\n";
             emit error(socket.error(), socket.errorString(), hostName, port);
             cerr << "throwing error in client...\n";
@@ -119,7 +119,7 @@ Package Client::talk(const QString &hostName, quint16 port, qint8 theMode, const
     cerr << blockSize << endl;
 
     while (socket.bytesAvailable() < blockSize) {
-        if (!socket.waitForReadyRead(Timeout)) {
+        if (!socket.waitForReadyRead(2 * Timeout)) {
             emit error(socket.error(), socket.errorString(), hostName, port);
             cerr << "throwing error in client...\n";
             return Package("Error has occured", -100);

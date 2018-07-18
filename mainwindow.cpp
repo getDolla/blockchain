@@ -38,6 +38,34 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(&client, SIGNAL(addConnection(QString,quint16)), this, SLOT(saveConnection(QString,quint16)));
 
     QString errors = bChain->getErrors();
+
+    QString path = QCoreApplication::applicationDirPath() + "/connections.txt";
+    QFile ipaddrresses(path);
+
+    if (ipaddrresses.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        QTextStream ipStream(&ipaddrresses);
+
+        cerr << "in connections.open()\n";
+
+        QString serverIP;
+        quint16 serverPort;
+        bChainHash = bChain->hash();
+
+        mode = (!errors.isEmpty()) ? 0 : 2;
+
+        while (!ipStream.atEnd()) {
+            if (!(ipStream >> serverIP).atEnd()) {
+                ipStream >> serverPort;
+                cerr << "serverIP: " << serverIP.toStdString() << endl;
+                cerr << "serverPort: " << serverPort << endl;
+                setUpConnection(serverIP, serverPort);
+            }
+        }
+    }
+
+    ipaddrresses.close();
+
+    errors = bChain->getErrors();
     if (!errors.isEmpty()) {
         mode = 0;
         ui->textBrowser->append("The blockchain on this computer has the following errors:");
@@ -59,6 +87,20 @@ MainWindow::~MainWindow()
     if (mode) {
         closing = true;
         on_UpdateBlockchain_clicked();
+
+        QString path = QCoreApplication::applicationDirPath() + "/connections.txt";
+        QFile ipaddrresses(path);
+
+        if (ipaddrresses.open(QIODevice::WriteOnly | QIODevice::Text)) {
+            QTextStream ipStream(&ipaddrresses);
+
+            for (const Connection& c : connections) {
+                ipStream << c.ipAddr << " ";
+                ipStream << c.portAddr << endl;
+            }
+        }
+
+        ipaddrresses.close();
     }
 
     delete bChain;
@@ -251,9 +293,11 @@ void MainWindow::on_Connect_clicked()
 
     serverWait = false;
 
-    ui->Connect->setEnabled(true);
-    ui->Store->setEnabled(true);
-    ui->UpdateBlockchain->setEnabled(true);
+    if (mode) {
+        ui->Connect->setEnabled(true);
+        ui->Store->setEnabled(true);
+        ui->UpdateBlockchain->setEnabled(true);
+    }
 }
 
 
@@ -337,6 +381,10 @@ void MainWindow::newBlockchain(const Blockchain<File>& importedChain, const QByt
     if ((commonHash != bChainHash) && ((hashMap[commonHash].size() > 1) || (!mode))) {
         if (commonHash == importedHash) {
             bChain->operator =(importedChain);
+            bChain->save();
+            bChainHash = bChain->hash();
+            ui->textBrowser->append("<b>Note:</b> Blockchain Updated!");
+            ui->textBrowser->append("Using blockchain from another node!<br>");
         }
         else if (!commonHash.isEmpty()) {
             Connection commonServer = hashMap[commonHash].back();
@@ -366,6 +414,7 @@ QByteArray MainWindow::checkForUpdates() {
     QByteArray commonHash;
     size_t maxSize = 0;
     for (const auto& iter : hashMap) {
+        cerr << "iter.first: " << iter.first.toStdString() << endl;
         if (iter.second.size() > maxSize) {
             maxSize = iter.second.size();
             commonHash = iter.first;
