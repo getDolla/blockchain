@@ -353,6 +353,7 @@ QByteArray MainWindow::checkForUpdates() {
     hashMap.clear();
     size_t ctr = 0;
     bChainHash = bChain->hash();
+    qint8 oldMode = mode;
 
     while (ctr < connections.size()) {
            mode = 1;
@@ -361,6 +362,7 @@ QByteArray MainWindow::checkForUpdates() {
            }
     }
 
+    mode = oldMode;
     QByteArray commonHash;
     size_t maxSize = 0;
     for (const auto& iter : hashMap) {
