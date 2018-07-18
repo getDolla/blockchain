@@ -100,7 +100,7 @@ private:
     QString ipAddress;
     quint16 port;
 
-    void sendBlocks(QTcpSocket* socket, qint8 mode, QByteArray& message);
+    void sendBlocks(QTcpSocket* socket, qint8 mode);
 };
 
 #endif

@@ -12,12 +12,20 @@
 #include <QCryptographicHash>
 
 #include <ctime>
-
+#include <iostream>
 using namespace std;
 
 template <typename T>
 class Block {
     friend bool operator ==(const Block<T>& lhs, const Block<T>& rhs) {
+//        cerr << "lhs.sHash: " << lhs.sHash.toStdString() << endl;
+//        cerr << "rhs.sHash: " << rhs.sHash.toStdString() << endl;
+//        cerr << "(lhs.sPrevHash == rhs.sPrevHash): " << (lhs.sPrevHash == rhs.sPrevHash) << endl;
+//        cerr << "(lhs._nIndex == rhs._nIndex): " << (lhs._nIndex == rhs._nIndex) << endl;
+//        cerr << "(lhs._nNonce == rhs._nNonce): " << (lhs._nNonce == rhs._nNonce) << endl;
+//        cerr << "lhs._tTime: " << lhs._tTime << endl;
+//        cerr << "rhs._tTime: " << rhs._tTime << endl;
+//        cerr << "(lhs._data == rhs._data): " << (lhs._data == rhs._data) << endl;
         return (lhs.sHash == rhs.sHash) && (lhs.sPrevHash == rhs.sPrevHash) && (lhs._nIndex == rhs._nIndex)
                 && (lhs._nNonce == rhs._nNonce) && (lhs._tTime == rhs._tTime) && (lhs._data == rhs._data);
     }

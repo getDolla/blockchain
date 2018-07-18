@@ -177,7 +177,7 @@ void Server::readBlocks() {
     qint8 mode;
     in >> mode;
     cerr << QString::number(mode).toStdString() << endl;
-    QByteArray content;
+    qint8 serverMode;
 
     cerr << "read contents\n";
 
@@ -196,54 +196,53 @@ void Server::readBlocks() {
         cerr << packet.toStdString() << endl;
 
         if (mode == 2) {
-                content = blockChainPtr->hash();
-                cerr << "In mode == 2, checking on index... " << blockChainPtr->getInd() << endl;
-                mode = (packet == content) ? 0 : -2;
-                cerr << QString::number(mode).toStdString() << endl;
-            }
-            else if (mode == 3) {
-                cerr << "In mode == 3\n";
-                cerr << "checking on index... " << blockChainPtr->getInd() << endl;
+            cerr << "In mode == 2, checking on index... " << blockChainPtr->getInd() << endl;
+            serverMode = (packet == (blockChainPtr->hash())) ? 0 : -2;
+            cerr << QString::number(serverMode).toStdString() << endl;
+        }
+        else if (mode == 3) {
+            cerr << "In mode == 3\n";
+            cerr << "checking on index... " << blockChainPtr->getInd() << endl;
 
-                QString text = "New blocks received from: ";
-                text += "<b>IP Address:</b> " + peerAddress + " <b>Port:</b> ";
-                text +=  QString::number(otherPort) + "<br>";
-                emit updateTextBrowser(text);
-                if(!(blockChainPtr->addBlocks(packet))) {
-                    emit updateTextBrowser("There were errors <b>from the connected node:</b><br>" + (blockChainPtr->getErrors()));
-                }
-                emit lengthAdded();
-                mode = -1;
+            QString text = "New blocks received from: ";
+            text += "<b>IP Address:</b> " + peerAddress + " <b>Port:</b> ";
+            text +=  QString::number(otherPort) + "<br>";
+            emit updateTextBrowser(text);
+            if(!(blockChainPtr->addBlocks(packet))) {
+                emit updateTextBrowser("There were errors <b>from the connected node:</b><br>" + (blockChainPtr->getErrors()));
+            }
+            emit lengthAdded();
+            serverMode = -1;
+        }
+        else {
+            Blockchain<File> importedChain = packet;
+            QString errors = importedChain.getErrors();
+
+            if (errors.isEmpty()) {
+                /* Compare to other nodes */
+                emit updateBlockchain(importedChain, packet);
+                serverMode = 0;
             }
             else {
-                Blockchain<File> importedChain = packet;
-                QString errors = importedChain.getErrors();
+                emit updateTextBrowser("There were errors <b>from the connected node:</b><br>" + errors);
 
-                if (errors.isEmpty()) {
-                    /* Compare to other nodes */
-                    emit updateBlockchain(importedChain, packet);
-                    mode = 0;
+                /* Try to get blockchain from another peer */
+                if (connectionsPtr->size() > 1) {
+                    mainWptr->updateBlockchain();
+                    serverMode = -2;
                 }
                 else {
-                    emit updateTextBrowser("There were errors <b>from the connected node:</b><br>" + errors);
-
-                    /* Try to get blockchain from another peer */
-                    if (connectionsPtr->size() > 1) {
-                        mainWptr->updateBlockchain();
-                        mode = -2;
-                    }
-                    else {
-                        /* else */
-                        mode = -100;
-                    }
+                    /* else */
+                    serverMode = -100;
                 }
             }
+        }
     }
     else if (!mode) {
-        mode = -2;
+        serverMode = -2;
     }
     else if (mode == 1) {
-        mode = -1;
+        serverMode = -1;
     }
 
     /* there are 4 modes FROM SERVER (all NON-positive):
@@ -253,14 +252,14 @@ void Server::readBlocks() {
      * -100 : Error has occured
     */
 
-    sendBlocks(socket, mode, content);
+    sendBlocks(socket, serverMode);
     cerr << "gonna disconnect this bad boy\n";
     cerr << "checking on index... " << blockChainPtr->getInd() << endl;
     socket->disconnectFromHost();
     cerr << "bad boy disconnected\n";
 }
 
-void Server::sendBlocks(QTcpSocket *socket, qint8 mode, QByteArray &message)
+void Server::sendBlocks(QTcpSocket *socket, qint8 mode)
 {
     cerr << "In sendBlocks\n";
     QByteArray block;
@@ -268,26 +267,25 @@ void Server::sendBlocks(QTcpSocket *socket, qint8 mode, QByteArray &message)
     out << (quint64) 0;
     out << mode;
 
+    QByteArray message;
     if (mode) {
         cerr << "if (mode)" << endl;
-        if (message.isEmpty()) {
-            if (mode == -1) {
-                message = blockChainPtr->hash();
-            }
-            else {
-                QString path = QCoreApplication::applicationDirPath() + "/blockchain";
-                QFile ifs(path);
+        if (mode == -1) {
+            message = blockChainPtr->hash();
+        }
+        else {
+            QString path = QCoreApplication::applicationDirPath() + "/blockchain";
+            QFile ifs(path);
 
-                if (!ifs.open(QIODevice::ReadOnly)) {
-                    QMessageBox messageBox;
-                    messageBox.critical(0,"Error",("Cannot open:\n" + path + "\n"));
-            //        cerr << "Can not open: " << path << " !" << endl;
-                    exit(1);
-                }
-
-                message = ifs.readAll();
-                ifs.close();
+            if (!ifs.open(QIODevice::ReadOnly)) {
+                QMessageBox messageBox;
+                messageBox.critical(0,"Error",("Cannot open:\n" + path + "\n"));
+                //        cerr << "Can not open: " << path << " !" << endl;
+                exit(1);
             }
+
+            message = ifs.readAll();
+            ifs.close();
         }
 
         out << message;

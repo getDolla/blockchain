@@ -54,8 +54,9 @@ public:
     }
 
     Blockchain(const QByteArray& chainString):_nDifficulty(2), _nIndex(0) {
-//        cerr << "In blockchain 2nd constr\n";
+        cerr << "In blockchain 2nd constr\n";
         if (!chainString.isEmpty()) {
+            cerr << chainString.toStdString() << endl;
             QTextStream chainStr(chainString);
             readFromStream(chainStr, 0);
         }
@@ -182,27 +183,32 @@ public:
         blockchain.close();
     }
 
-    QString equals(const Blockchain<T>& rhs) {
-        if (rhs.length() < length()) {
-            return "ERROR: Length of blockchain on connected node is shorter!<br>Length of blockchain on this computer: " + QString::number(rhs.length())
-                    + "<br>Length of blockchain on connected node: " + QString::number(length());
+    bool equals(const Blockchain<T>& rhs) {
+        cerr << "In equals...\n";
+        if (rhs._vChain.size() < _vChain.size()) {
+            cerr << "First if statement, return false\n";
+            return false;
         }
 
-        for(size_t i = 0; i < length(); ++i) {
+        for(size_t i = 0; i < _vChain.size(); ++i) {
             if (_vChain[i] != rhs._vChain[i]) {
-                return "Block inconsistent at index <b>" + QString::number(i) + "</b>!";
+                cerr << "Second if statement, return false\n";
+                return false;
             }
         }
 
-        if (rhs.length() > length()) {
-            for(size_t i = length(); i < rhs.length(); ++i) {
+        if (rhs._vChain.size() > _vChain.size()) {
+            cerr << "In equals, rhs > length\n";
+            for(size_t i = _vChain.size(); i < rhs._vChain.size(); ++i) {
                 _vChain.push_back(rhs._vChain[i]);
             }
-
-            return "Blockchain synced with connected node. Length: " + QString::number(length());
         }
 
-        return "Blockchain is up to date with connected node :)";
+//        for (const Block<T>& b : _vChain) {
+//            cerr << b.getIndex() << endl;
+//        }
+
+        return true;
     }
 
     T viewAt(quint64 index) {
@@ -284,6 +290,11 @@ private:
                 return false;
             }
 
+//            cerr << ind << endl;
+//            cerr << block.getDatTime() << endl;
+//            cerr << nonce << endl;
+//            cerr << block.sHash.toStdString() << endl;
+
             _nIndex = ind;
             cerr << "in readfromstream, _nIndex: " << _nIndex << endl;
             _vChain.push_back(block);
@@ -314,6 +325,11 @@ private:
 
                         return false;
                     }
+
+//                    cerr << ind << endl;
+//                    cerr << block.getDatTime() << endl;
+//                    cerr << nonce << endl;
+//                    cerr << block.sHash.toStdString() << endl;
 
                     _nIndex = ind;
                     _vChain.push_back(block);

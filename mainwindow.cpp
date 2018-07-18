@@ -114,7 +114,7 @@ void MainWindow::updateBlockchain() {
     cerr << "In updateBlockchain(): " << endl;
     cerr << commonHash.toStdString() << endl;
     cerr << bChainHash.toStdString() << endl;
-    if ((commonHash != bChainHash) && ((hashMap[commonHash].size() > 1) || (!mode))) {
+    if ((commonHash != bChainHash) || (!mode)) {
         Connection commonServer = hashMap[commonHash].back();
         mode = 0;
         setUpConnection(commonServer.ipAddr, commonServer.portAddr);
@@ -352,6 +352,7 @@ bool MainWindow::setUpConnection(const QString &ip, quint16 port) {
     }
     else if (fromServer.mode == -2) {
         Blockchain<File> importedChain = fromServer.data;
+        cerr << "fromServer.data: " << fromServer.data.toStdString() << endl;
         QString errors = importedChain.getErrors();
 
         if (errors.isEmpty()) {
@@ -379,18 +380,25 @@ void MainWindow::newBlockchain(const Blockchain<File>& importedChain, const QByt
     cerr << "ImportedHash: " << importedHash.toStdString() << endl;
     cerr << "CommonHash: " << commonHash.toStdString() << endl;
 
-    if ((commonHash != bChainHash) && ((hashMap[commonHash].size() > 1) || (!mode))) {
-        if (commonHash == importedHash) {
-            bChain->operator =(importedChain);
+    if (commonHash != bChainHash) {
+        if (bChain->equals(importedChain)) {
             bChain->save();
             bChainHash = bChain->hash();
-            ui->textBrowser->append("<b>Note:</b> Blockchain Updated!");
-            ui->textBrowser->append("Using blockchain from another node!<br>");
+            ui->textBrowser->append("<b>Note:</b> Blockchain synced with another node.<br>");
         }
-        else if (!commonHash.isEmpty()) {
-            Connection commonServer = hashMap[commonHash].back();
-            mode = 0;
-            setUpConnection(commonServer.ipAddr, commonServer.portAddr);
+        else if ((hashMap[commonHash].size() > 1) || (!mode)) {
+            if (commonHash == importedHash) {
+                bChain->operator =(importedChain);
+                bChain->save();
+                bChainHash = bChain->hash();
+                ui->textBrowser->append("<b>Note:</b> Blockchain updated!");
+                ui->textBrowser->append("Using blockchain from another node!<br>");
+            }
+            else if (!commonHash.isEmpty()) {
+                Connection commonServer = hashMap[commonHash].back();
+                mode = 0;
+                setUpConnection(commonServer.ipAddr, commonServer.portAddr);
+            }
         }
     }
 
