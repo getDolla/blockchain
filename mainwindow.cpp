@@ -42,7 +42,7 @@ MainWindow::MainWindow(QWidget *parent) :
         mode = 0;
         ui->textBrowser->append("The blockchain on this computer has the following errors:");
         ui->textBrowser->append("<b>" + errors + "</b>");
-        ui->textBrowser->append("Please connect to a node to resolve this issue.");
+        ui->textBrowser->append("Please connect to a node to resolve this issue.<br>");
 
         ui->Connect->setEnabled(true);
         ui->Store->setEnabled(false);
@@ -88,10 +88,12 @@ void MainWindow::on_UpdateBlockchain_clicked()
     ui->Store->setEnabled(false);
     ui->UpdateBlockchain->setEnabled(false);
 
-    updateBlockchain();
-    ui->textBrowser->append("Done.");
+    serverWait = true;
 
-    ui->textBrowser->append("\n");
+    updateBlockchain();
+    ui->textBrowser->append("Done.<br>");
+
+    serverWait = false;
 
     ui->Connect->setEnabled(true);
     ui->Store->setEnabled(true);
@@ -121,7 +123,7 @@ void MainWindow::on_Store_clicked()
         ui->Store->setEnabled(false);
         ui->UpdateBlockchain->setEnabled(false);
 
-        ui->textBrowser->append("Saving " + fileName + " to block...\n");
+        ui->textBrowser->append("Saving " + fileName + " to block...<br>");
 
         serverWait = true;
 
@@ -166,13 +168,13 @@ void MainWindow::on_Store_clicked()
             }
         }
 
-        ui->textBrowser->append("Block mined: " + hash + "\n");
+        ui->textBrowser->append("Block mined: " + hash);
 
         serverWait = false;
 
         ui->label->setText("Blockchain Length: " + QString::number(bChain->length()));
     }
-    ui->textBrowser->append("\n");
+    ui->textBrowser->append("<br>");
 
     ui->Connect->setEnabled(true);
     ui->Store->setEnabled(true);
@@ -181,9 +183,8 @@ void MainWindow::on_Store_clicked()
 
 void MainWindow::on_Save_clicked()
 {
-    if (ui->spinBox_1->value() >= bChain->length()) {
-        ui->textBrowser->append("<b>Index cannot be greater than the length of the blockchain!</b>");
-        ui->textBrowser->append("");
+    if (ui->spinBox_1->value() > bChain->length()) {
+        ui->textBrowser->append("<b>Index cannot be greater than the length of the blockchain!</b><br>");
         return;
     }
 
@@ -194,7 +195,7 @@ void MainWindow::on_Save_clicked()
     spIndex = ui->spinBox_1->value();
 
 
-    ui->textBrowser->append("Index " + QString::number(spIndex) + " selected.\n");
+    ui->textBrowser->append("Index " + QString::number(spIndex) + " selected.<br>");
 
     File file = bChain->viewAt(spIndex);
     QString fileName = (file.getFileName() != "") ? file.getFileName() :
@@ -207,12 +208,11 @@ void MainWindow::on_Save_clicked()
     if (!selectedFile.isEmpty()) {
         QFile ofs(selectedFile);
         ofs.open(QIODevice::WriteOnly);
-        ui->textBrowser->append("Saving data from " + fileName + " to " + selectedFile + " ...\n");
+        ui->textBrowser->append("Saving data from " + fileName + " to " + selectedFile + " ...<br>");
         ofs.write(file.getData());
         ofs.close();
 
-        ui->textBrowser->append("Data successfully saved.");
-        ui->textBrowser->append("\n");
+        ui->textBrowser->append("Data successfully saved.<br>");
     }
 
     ui->Connect->setEnabled(true);
@@ -222,25 +222,14 @@ void MainWindow::on_Save_clicked()
 
 void MainWindow::on_View_clicked()
 {
-    if (ui->spinBox_2->value() >= bChain->length()) {
-        ui->textBrowser->append("<b>Index cannot be greater than the length of the blockchain!</b>");
-        ui->textBrowser->append("");
-        return;
-    }
-    spIndex = ui->spinBox_2->value();
+    serverWait = true;
 
-
-    ui->textBrowser->append("Index " + QString::number(spIndex) + " selected.\n");
-    File file = bChain->viewAt(spIndex);
-
-    if (file.getFileName() != "") {
-        ui->textBrowser->append("<b>Filename:</b>");
-        ui->textBrowser->append(file.getFileName()+":\n");
+    for (size_t i = 1; i <= bChain->length(); ++i) {
+        ui->textBrowser->append("<b>" + QString::number(i) + ":</b>");
+        ui->textBrowser->append(bChain->viewAt(i).getFileName()+"<br>");
     }
 
-    ui->textBrowser->append("<b>Data:</b>");
-    ui->textBrowser->append(QString(file.getData()));
-    ui->textBrowser->append("\n");
+    serverWait = false;
 }
 
 void MainWindow::on_Connect_clicked()
@@ -269,6 +258,12 @@ void MainWindow::on_Connect_clicked()
 
 
 bool MainWindow::setUpConnection(const QString &ip, quint16 port) {
+    if ((ip == server->getIpAddress()) && (port == server->getPort())) {
+        cerr << "LMAO can't connect to yourself bro\n";
+        removeConnectection(ip, port);
+        return false;
+    }
+
     cerr << "In setUpConnection\n";
     QByteArray data;
     if (mode == 2) {
@@ -319,7 +314,7 @@ bool MainWindow::setUpConnection(const QString &ip, quint16 port) {
         }
         else {
             ui->textBrowser->append("There were errors <b>from the connected node:</b><br>" + errors);
-            ui->textBrowser->append("Sending blockchain on this computer to connected node...");
+            ui->textBrowser->append("Sending blockchain on this computer to connected node...<br>");
             mode = 4;
             setUpConnection(ip, port);
         }

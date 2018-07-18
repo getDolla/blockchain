@@ -130,12 +130,12 @@
      <rect>
       <x>450</x>
       <y>280</y>
-      <width>121</width>
+      <width>181</width>
       <height>41</height>
      </rect>
     </property>
     <property name="text">
-     <string>View</string>
+     <string>List Files</string>
     </property>
    </widget>
    <widget class="QPushButton" name="UpdateBlockchain">
@@ -167,19 +167,6 @@
     </property>
     <property name="text">
      <string>IP Address</string>
-    </property>
-   </widget>
-   <widget class="QSpinBox" name="spinBox_2">
-    <property name="geometry">
-     <rect>
-      <x>580</x>
-      <y>280</y>
-      <width>51</width>
-      <height>41</height>
-     </rect>
-    </property>
-    <property name="maximum">
-     <number>99999999</number>
     </property>
    </widget>
    <widget class="QSpinBox" name="spinBox_1">

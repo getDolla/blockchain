@@ -95,7 +95,7 @@ private:
     Blockchain<File>* blockChainPtr;
     MainWindow* mainWptr;
     const vector<Connection>* connectionsPtr;
-    bool* waitFlag;
+    const bool* waitFlag;
 
     QString ipAddress;
     quint16 port;

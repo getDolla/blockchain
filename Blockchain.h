@@ -210,7 +210,7 @@ public:
     }
 
     quint64 length() const {
-        return _vChain.size();
+        return (_vChain.size() > 0) ? _vChain.size() - 1 : 0;
     }
 
     QString getErrors() {

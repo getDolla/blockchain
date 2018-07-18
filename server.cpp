@@ -125,16 +125,16 @@ void Server::handleConnection() {
     while (tcpServer->hasPendingConnections())
         {
             cerr << "In handleConnection\n";
-//            if (!(*waitFlag)) {
+            if (!(*waitFlag)) {
                 cerr << "wait flag off" << endl;
                 cerr << "In handleConnection(), checking on index... " << blockChainPtr->getInd() << endl;
                 QTcpSocket* socket = tcpServer->nextPendingConnection();
                 connect(socket, SIGNAL(readyRead()), this, SLOT(readBlocks()));
                 connect(socket, SIGNAL(disconnected()), socket, SLOT(deleteLater()));
-//            }
-//            else {
-//                QThread::msleep(1000);
-//            }
+            }
+            else {
+                QThread::msleep(1000);
+            }
         }
 }
 
