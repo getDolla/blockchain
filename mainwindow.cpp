@@ -114,7 +114,7 @@ void MainWindow::updateBlockchain() {
     cerr << "In updateBlockchain(): " << endl;
     cerr << commonHash.toStdString() << endl;
     cerr << bChainHash.toStdString() << endl;
-    if ((commonHash != bChainHash) || (!mode)) {
+    if ((!commonHash.isEmpty()) && ((commonHash != bChainHash) || (!mode))) {
         Connection commonServer = hashMap[commonHash].back();
         mode = 0;
         setUpConnection(commonServer.ipAddr, commonServer.portAddr);
