@@ -381,12 +381,7 @@ void MainWindow::newBlockchain(const Blockchain<File>& importedChain, const QByt
     cerr << "CommonHash: " << commonHash.toStdString() << endl;
 
     if (commonHash != bChainHash) {
-        if (bChain->equals(importedChain)) {
-            bChain->save();
-            bChainHash = bChain->hash();
-            ui->textBrowser->append("<b>Note:</b> Blockchain synced with another node.<br>");
-        }
-        else if ((hashMap[commonHash].size() > 1) || (!mode)) {
+        if ((hashMap[commonHash].size() > 1) || (!mode)) {
             if (commonHash == importedHash) {
                 bChain->operator =(importedChain);
                 bChain->save();
@@ -394,11 +389,16 @@ void MainWindow::newBlockchain(const Blockchain<File>& importedChain, const QByt
                 ui->textBrowser->append("<b>Note:</b> Blockchain updated!");
                 ui->textBrowser->append("Using blockchain from another node!<br>");
             }
-            else if (!commonHash.isEmpty()) {
+            else {
                 Connection commonServer = hashMap[commonHash].back();
                 mode = 0;
                 setUpConnection(commonServer.ipAddr, commonServer.portAddr);
             }
+        }
+        else if (bChain->equals(importedChain)) {
+            bChain->save();
+            bChainHash = bChain->hash();
+            ui->textBrowser->append("<b>Note:</b> Blockchain synced with another node.<br>");
         }
     }
 
