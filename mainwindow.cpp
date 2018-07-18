@@ -61,11 +61,12 @@ MainWindow::MainWindow(QWidget *parent) :
                 setUpConnection(serverIP, serverPort);
             }
         }
+
+        errors = bChain->getErrors();
     }
 
     ipaddrresses.close();
 
-    errors = bChain->getErrors();
     if (!errors.isEmpty()) {
         mode = 0;
         ui->textBrowser->append("The blockchain on this computer has the following errors:");
