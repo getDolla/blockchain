@@ -13,8 +13,8 @@
 #include <QTextStream>
 #include <QFile>
 #include <QCryptographicHash>
-#include <QMutexLocker>
 #include <QMutex>
+#include <QMutexLocker>
 
 #include <vector>
 
@@ -56,13 +56,19 @@ public:
     Blockchain(const QByteArray& chainString):_nDifficulty(2), _nIndex(0) {
         cerr << "In blockchain 2nd constr\n";
         if (!chainString.isEmpty()) {
-            cerr << chainString.toStdString() << endl;
+//            cerr << chainString.toStdString() << endl;
             QTextStream chainStr(chainString);
             readFromStream(chainStr, 0);
         }
     }
 
+    Blockchain(const Blockchain<T>& otherChain): _nDifficulty(otherChain._nDifficulty), _nIndex(otherChain._nIndex),
+        errors(otherChain.errors), _vChain(otherChain._vChain)  {
+        cerr << "In copy constructor!" << endl;
+    }
+
     Blockchain& operator =(const Blockchain& rhs) {
+        QMutexLocker locker(&mutex);
         if (this != &rhs) {
             _nDifficulty = rhs._nDifficulty;
             _nIndex = rhs._nIndex;
@@ -75,15 +81,18 @@ public:
 
     QString addBlock(const T& data)
     {
+        QMutexLocker locker(&mutex);
         Block<T> bNew(++_nIndex, data);
         bNew.sPrevHash = _vChain.back().sHash;
         QString hash = bNew.mineBlock(_nDifficulty);
         _vChain.push_back(bNew);
+
         save(_nIndex);
         return hash;
     }
 
     bool addBlocks(const QByteArray& text) {
+        QMutexLocker locker(&mutex);
         QTextStream blockStr(text);
 //        cout << text.toStdString() << endl;
 //        cout << "_nIndex: " << _nIndex << endl;
@@ -99,6 +108,8 @@ public:
 
         //for checking
         QString hash;
+
+
 
         //gets the genesis block:
         while (!(blockStr >> ind >> prevHash >> datTime >> decode64 >> nonce).atEnd()) {
@@ -184,6 +195,7 @@ public:
     }
 
     bool equals(const Blockchain<T>& rhs) {
+        QMutexLocker locker(&mutex);
         cerr << "In equals...\n";
         if (rhs._vChain.size() < _vChain.size()) {
             cerr << "First if statement, return false\n";
@@ -212,6 +224,7 @@ public:
     }
 
     T viewAt(quint64 index) {
+        QMutexLocker locker(&mutex);
         return _vChain[index].getData();
     }
 
@@ -220,6 +233,7 @@ public:
     }
 
     QString getErrors() {
+        QMutexLocker locker(&mutex);
         QString copy = errors;
         errors.clear();
         return copy;
@@ -250,6 +264,7 @@ private:
     quint64 _nDifficulty;
     quint64 _nIndex;
     QString errors;
+    QMutex mutex;
     vector<Block<T>> _vChain;
 
     template <typename S>

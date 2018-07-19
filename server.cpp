@@ -41,8 +41,8 @@
 
 //#include <iostream>
 
-Server::Server(MainWindow* mainW, Blockchain<File>* chainPtr, const vector<Connection>* connecPtr, bool* serverFlag)
-:  mainWptr(mainW), blockChainPtr(chainPtr), connectionsPtr(connecPtr), tcpServer(nullptr), waitFlag(serverFlag), networkSession(nullptr), port(0)
+Server::Server(Blockchain<File>* chainPtr):
+    blockChainPtr(chainPtr), tcpServer(nullptr), networkSession(nullptr), port(0)
 {
     QNetworkConfigurationManager manager;
     if (manager.capabilities() & QNetworkConfigurationManager::NetworkSessionRequired) {
@@ -69,7 +69,6 @@ Server::Server(MainWindow* mainW, Blockchain<File>* chainPtr, const vector<Conne
 
     connect(tcpServer, SIGNAL(newConnection()), this, SLOT(handleConnection()));
     cerr << "In server(), checking on index... " << blockChainPtr->getInd() << endl;
-    cerr << "In server(), mainW: " << mainWptr << endl;
     cerr << "In server(), blockChainptr: " << blockChainPtr << endl;
 }
 
@@ -125,16 +124,9 @@ void Server::handleConnection() {
     while (tcpServer->hasPendingConnections())
         {
             cerr << "In handleConnection\n";
-            if (!(*waitFlag)) {
-                cerr << "wait flag off" << endl;
-                cerr << "In handleConnection(), checking on index... " << blockChainPtr->getInd() << endl;
-                QTcpSocket* socket = tcpServer->nextPendingConnection();
-                connect(socket, SIGNAL(readyRead()), this, SLOT(readBlocks()));
-                connect(socket, SIGNAL(disconnected()), socket, SLOT(deleteLater()));
-            }
-            else {
-                QThread::msleep(1000);
-            }
+            QTcpSocket* socket = tcpServer->nextPendingConnection();
+            connect(socket, SIGNAL(readyRead()), this, SLOT(readBlocks()));
+            connect(socket, SIGNAL(disconnected()), socket, SLOT(deleteLater()));
         }
 }
 
@@ -209,30 +201,51 @@ void Server::readBlocks() {
             text +=  QString::number(otherPort) + "<br>";
             emit updateTextBrowser(text);
             if(!(blockChainPtr->addBlocks(packet))) {
-                emit updateTextBrowser("There were errors <b>from the connected node:</b><br>" + (blockChainPtr->getErrors()));
-            }
-            emit lengthAdded();
-            serverMode = -1;
-        }
-        else {
-            Blockchain<File> importedChain = packet;
-            QString errors = importedChain.getErrors();
-
-            if (errors.isEmpty()) {
-                /* Compare to other nodes */
-                emit updateBlockchain(importedChain, packet);
-                serverMode = 0;
+                emit updateTextBrowser("Node <b>IP:</b> " + peerAddress + " <b>Port:</b> " + QString::number(otherPort)
+                                       + " contains the following errors:<br>" + (blockChainPtr->getErrors()));
+                serverMode = -2;
             }
             else {
-                emit updateTextBrowser("There were errors <b>from the connected node:</b><br>" + errors);
+                serverMode = -1;
+            }
+            emit lengthAdded();
+        }
+        else {
+            /* blockchain is also stored in RAM */
+            blockChainPtr->save();
+            Blockchain<File> importedChain(packet);
+            QString theirErrors = importedChain.getErrors();
+            QString ourErrors = blockChainPtr->getErrors();
 
-                /* Try to get blockchain from another peer */
-                if (connectionsPtr->size() > 1) {
-                    mainWptr->updateBlockchain();
+            if (theirErrors.isEmpty()) {
+                if (blockChainPtr->hash() !=
+                        QCryptographicHash::hash(packet, QCryptographicHash::Sha3_512).toHex()) {
+                    if (!ourErrors.isEmpty()) {
+                        blockChainPtr->operator =(importedChain);
+                        blockChainPtr->save();
+                        serverMode = 0;
+
+                        emit updateTextBrowser("<b>Note:</b> Blockchain updated!<br>Using blockchain from <b>IP:</b> "
+                                               + peerAddress + " <b>Port:</b> " + QString::number(otherPort) + "<br>");
+                    }
+                    else {
+                        serverMode = -2;
+                    }
+                }
+                else {
+                    serverMode = 0;
+                }
+            }
+            else {
+                emit updateTextBrowser("Node <b>IP:</b> " + peerAddress + " <b>Port:</b> " + QString::number(otherPort)
+                                       + " contains the following errors:<br>" + (blockChainPtr->getErrors()));
+
+                if (ourErrors.isEmpty()) {
+                    emit updateTextBrowser("Sending blockchain on this computer to connected node...<br>");
                     serverMode = -2;
                 }
                 else {
-                    /* else */
+                    /* else  (both nodes are corrupted) */
                     serverMode = -100;
                 }
             }

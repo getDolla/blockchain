@@ -84,7 +84,6 @@ private:
 
     QByteArray bChainHash;
 
-    bool serverWait;
     bool closing;
     quint64 spIndex;
     qint8 mode;
