@@ -361,12 +361,17 @@ bool MainWindow::setUpConnection(const QString &ip, quint16 port) {
         cerr << "fromServer.data: " << fromServer.data.toStdString() << endl;
         QString errors = importedChain.getErrors();
 
-        if (errors.isEmpty()) {
+        if (errors.isEmpty() && (importedChain.length() >= bChain->length())) {
             newBlockchain(importedChain, fromServer.data);
         }
         else {
-            ui->textBrowser->append("Node <b>IP:</b> " + ip + " <b>Port:</b> " + QString::number(port) + " contains the following errors:<br>" + errors);
-            ui->textBrowser->append("Sending blockchain on this computer to connected node...<br>");
+            if (!(errors.isEmpty())) {
+                ui->textBrowser->append("Node <b>IP:</b> " + ip + " <b>Port:</b> " + QString::number(port) + " contains the following errors:<br>" + errors);
+                ui->textBrowser->append("Sending blockchain on this computer to connected node...<br>");
+            }
+            else if (importedChain.length() < bChain->length()) {
+                ui->textBrowser->append("Sending blockchain on this computer to: <b>IP:</b> " + ip + " <b>Port:</b> " + QString::number(port) + "<br>");
+            }
             mode = 4;
             setUpConnection(ip, port);
         }

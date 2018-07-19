@@ -214,41 +214,34 @@ void Server::readBlocks() {
             /* blockchain is also stored in RAM */
             blockChainPtr->save();
             Blockchain<File> importedChain(packet);
-            QString theirErrors = importedChain.getErrors();
-            QString ourErrors = blockChainPtr->getErrors();
+            QString errors = importedChain.getErrors();
 
-            if (theirErrors.isEmpty()) {
+            if (errors.isEmpty()) {
                 if (blockChainPtr->hash() !=
                         QCryptographicHash::hash(packet, QCryptographicHash::Sha3_512).toHex()) {
-                    if (!ourErrors.isEmpty()) {
+                    if (!(blockChainPtr->equals(importedChain))) {
                         blockChainPtr->operator =(importedChain);
                         blockChainPtr->save();
-                        serverMode = 0;
 
                         emit updateTextBrowser("<b>Note:</b> Blockchain updated!<br>Using blockchain from <b>IP:</b> "
                                                + peerAddress + " <b>Port:</b> " + QString::number(otherPort) + "<br>");
                     }
                     else {
-                        serverMode = -2;
+                        emit updateTextBrowser("<b>Note:</b> Blockchain synced with <b>IP:</b> "
+                                               + peerAddress + " <b>Port:</b> " + QString::number(otherPort) + "<br>");
                     }
                 }
-                else {
-                    serverMode = 0;
-                }
+                serverMode = 0;
             }
             else {
                 emit updateTextBrowser("Node <b>IP:</b> " + peerAddress + " <b>Port:</b> " + QString::number(otherPort)
                                        + " contains the following errors:<br>" + (blockChainPtr->getErrors()));
 
-                if (ourErrors.isEmpty()) {
-                    emit updateTextBrowser("Sending blockchain on this computer to connected node...<br>");
-                    serverMode = -2;
-                }
-                else {
-                    /* else  (both nodes are corrupted) */
-                    serverMode = -100;
-                }
+                emit updateTextBrowser("Sending blockchain on this computer to connected node...<br>");
+                serverMode = -2;
             }
+
+            emit lengthAdded();
         }
     }
     else if (!mode) {
