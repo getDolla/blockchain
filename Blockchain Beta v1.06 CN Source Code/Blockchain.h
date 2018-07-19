@@ -132,7 +132,7 @@ public:
 
                 if (block.sHash != hash) {
                     cerr << "In error statement!\n";
-                    errors += "Hash inconsistency at block " + QString::number(ind) + "!\n";
+                    errors += "哈希在区块 #" + QString::number(ind) + " 不一致！\n";
                     save(_vChain.size() - counter);
                     return false;
                 }
@@ -286,7 +286,7 @@ private:
             chainStr >> hash;
 
             if (block.sHash != hash) {
-                errors += "Hash inconsistency at genesis block!\n";
+                errors += "创世区块的哈希不一致！\n";
                 cerr << ind << endl;
                 cerr << block.getDatTime() << endl;
                 cerr << nonce << endl;
@@ -294,7 +294,7 @@ private:
 
                 if (flag) {
                     QMessageBox messageBox;
-                    messageBox.critical(0,"Error","Hash inconsistency at genesis block!");
+                    messageBox.critical(0,"错误","创世区块的哈希不一致！");
 //                    exit(1);
                 }
 
@@ -320,17 +320,17 @@ private:
                     block = Block<T>(ind, prevHash, datTime, dataIn, nonce);
                     chainStr >> hash;
                     if (block.sHash != hash) {
-                        errors += "Hash inconsistency at block " + QString::number(ind) + "!\n";
-                        cerr << "Hash inconsistency at block " << ind << "!" << endl;
-                        cerr << ind << endl;
-                        cerr << block.sPrevHash.toStdString() << endl;
-                                        cerr << block.getDatTime() << endl;
-                                        cerr << nonce << endl;
-                                        cerr << block.sHash.toStdString() << "\n" << hash.toStdString() << endl;
+                        errors += "哈希在区块 #" + QString::number(ind) + " 不一致！\n";
+//                        cerr << "Hash inconsistency at block " << ind << "!" << endl;
+//                        cerr << ind << endl;
+//                        cerr << block.sPrevHash.toStdString() << endl;
+//                        cerr << block.getDatTime() << endl;
+//                        cerr << nonce << endl;
+//                        cerr << block.sHash.toStdString() << "\n" << hash.toStdString() << endl;
 
                         if (flag) {
                             QMessageBox messageBox;
-                            messageBox.critical(0,"Error", "Hash inconsistency at block " + QString::number(ind) + "\n");
+                            messageBox.critical(0,"错误", "哈希在区块 #" + QString::number(ind) + " 不一致！\n");
 //                            exit(1);
                         }
 
