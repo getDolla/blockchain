@@ -30,7 +30,7 @@ public:
     Blockchain(): _nDifficulty(2), _nIndex(0)
     {
         QString path = QCoreApplication::applicationDirPath() + "/blockchain";
-//        cout << path << endl;
+//        // cout << path << endl;
 
         QFile blockchain(path);
 
@@ -42,7 +42,7 @@ public:
 
     	// string line;
     	// while(getline(blockchain, line)) {
-    	// 	cout << line << endl;
+        // 	// cout << line << endl;
     	// }
 
         QTextStream blockStr(&blockchain);
@@ -93,8 +93,8 @@ public:
     bool addBlocks(const QByteArray& text) {
         QMutexLocker locker(&mutex);
         QTextStream blockStr(text);
-//        cout << text.toStdString() << endl;
-//        cout << "_nIndex: " << _nIndex << endl;
+//        // cout << text.toStdString() << endl;
+//        // cout << "_nIndex: " << _nIndex << endl;
 
         //Block attributes
         quint64 ind;
@@ -122,13 +122,13 @@ public:
             if (ind != _nIndex) {
                 // cerr << "inside the if statement!\n";
                 T dataIn = (QByteArray::fromBase64(decode64));
-                 cout << "decoded:\n" << QByteArray::fromBase64(decode64).toStdString() << endl;
-                 cout << ":end decode" << endl;
+                 // cout << "decoded:\n" << QByteArray::fromBase64(decode64).toStdString() << endl;
+                 // cout << ":end decode" << endl;
 
                 Block<T> block(ind, prevHash, datTime, dataIn, nonce);
                 blockStr >> hash;
-                cout << "hash: " << hash.toStdString() << endl;
-                cout << "block hash: " << block.sHash.toStdString() << endl;
+                // cout << "hash: " << hash.toStdString() << endl;
+                // cout << "block hash: " << block.sHash.toStdString() << endl;
 
                 if (block.sHash != hash) {
                     // cerr << "In error statement!\n";
@@ -238,7 +238,7 @@ public:
 
     QByteArray hash() const {
         QString path = QCoreApplication::applicationDirPath() + "/blockchain";
-//        cout << path << endl;
+//        // cout << path << endl;
 
         QFile ifs(path);
 
@@ -279,8 +279,8 @@ private:
         if(!(chainStr >> ind >> datTime >> decode64 >> nonce).atEnd()) {
 //            T dataIn = (QByteArray(base64_decode(decode64.data()).c_str()));
             T dataIn = (QByteArray::fromBase64(decode64));
-            // cout << "decoded: " << base64_decode(decode64) << endl;
-            // cout << "line 49: " << dataIn << endl;
+            // // cout << "decoded: " << base64_decode(decode64) << endl;
+            // // cout << "line 49: " << dataIn << endl;
 
             Block<T> block(ind, prevHash, datTime, dataIn, nonce);
             chainStr >> hash;
