@@ -45,7 +45,7 @@ MainWindow::MainWindow(QWidget *parent) :
     if (ipaddrresses.open(QIODevice::ReadOnly | QIODevice::Text)) {
         QTextStream ipStream(&ipaddrresses);
 
-        cerr << "in connections.open()\n";
+        // cerr << "in connections.open()\n";
 
         QString serverIP;
         quint16 serverPort;
@@ -56,8 +56,8 @@ MainWindow::MainWindow(QWidget *parent) :
         if (!ipStream.atEnd()) {
             while (!(ipStream >> serverIP).atEnd()) {
                 ipStream >> serverPort;
-                cerr << "serverIP: " << serverIP.toStdString() << endl;
-                cerr << "server端口: " << serverPort << endl;
+                // cerr << "serverIP: " << serverIP.toStdString() << endl;
+                // cerr << "server端口: " << serverPort << endl;
                 setUpConnection(serverIP, serverPort);
             }
 
@@ -78,9 +78,9 @@ MainWindow::MainWindow(QWidget *parent) :
         ui->UpdateBlockchain->setEnabled(false);
     }
 
-    cerr << "in MainWindow(), checking index... " << bChain->getInd() << endl;
-    cerr << "this: " << this << endl;
-    cerr << "bChain: " << bChain << endl;
+    // cerr << "in MainWindow(), checking index... " << bChain->getInd() << endl;
+    // cerr << "this: " << this << endl;
+    // cerr << "bChain: " << bChain << endl;
  }
 
 MainWindow::~MainWindow()
@@ -113,9 +113,9 @@ void MainWindow::updateBlockchain() {
     bChain->save();
     QByteArray commonHash = checkForUpdates();
 
-    cerr << "In updateBlockchain(): " << endl;
-    cerr << commonHash.toStdString() << endl;
-    cerr << bChainHash.toStdString() << endl;
+    // cerr << "In updateBlockchain(): " << endl;
+    // cerr << commonHash.toStdString() << endl;
+    // cerr << bChainHash.toStdString() << endl;
 
     if ((!commonHash.isEmpty()) && ((commonHash != bChainHash) || (!mode))) {
         Connection commonServer = hashMap[commonHash].back();
@@ -193,10 +193,10 @@ void MainWindow::on_Store_clicked()
         blockchain.seek(++pos);
 
         QByteArray data = blockchain.readLine(blockchain.size() - pos);
-        cerr << data.toStdString() << endl;
+        // cerr << data.toStdString() << endl;
         blockchain.close();
 
-        cerr << "in store(), checking index... " << bChain->getInd() << endl;
+        // cerr << "in store(), checking index... " << bChain->getInd() << endl;
 
         hashMap.clear();
         size_t ctr = 0;
@@ -208,7 +208,7 @@ void MainWindow::on_Store_clicked()
                 ++ctr;
             }
             else {
-                cerr << "fromServer.mode: " << fromServer.data.toStdString() << endl;
+                // cerr << "fromServer.mode: " << fromServer.data.toStdString() << endl;
             }
         }
 
@@ -294,15 +294,15 @@ void MainWindow::on_Connect_clicked()
 
 bool MainWindow::setUpConnection(const QString &ip, quint16 port) {
     if ((ip == server->getIpAddress()) && (port == server->getPort())) {
-        cerr << "LMAO can't connect to yourself bro\n";
+        // cerr << "LMAO can't connect to yourself bro\n";
         removeConnectection(ip, port);
         return false;
     }
 
-    cerr << "In setUpConnection\n";
+    // cerr << "In setUpConnection\n";
     QByteArray data;
     if (mode == 2) {
-        cerr << "mode == 2" << endl;
+        // cerr << "mode == 2" << endl;
         data = bChainHash;
     }
     else if (mode > 2) {
@@ -324,7 +324,7 @@ bool MainWindow::setUpConnection(const QString &ip, quint16 port) {
             blockchain.seek(++pos);
 
             data = blockchain.readLine(blockchain.size() - pos);
-            cerr << data.toStdString() << endl;
+            // cerr << data.toStdString() << endl;
         }
         else {
             data = blockchain.readAll();
@@ -358,7 +358,7 @@ bool MainWindow::setUpConnection(const QString &ip, quint16 port) {
     }
     else if (fromServer.mode == -2) {
         Blockchain<File> importedChain(fromServer.data);
-        cerr << "fromServer.data: " << fromServer.data.toStdString() << endl;
+        // cerr << "fromServer.data: " << fromServer.data.toStdString() << endl;
         QString errors = importedChain.getErrors();
 
         if (errors.isEmpty() && (importedChain.length() >= bChain->length())) {
@@ -377,19 +377,19 @@ bool MainWindow::setUpConnection(const QString &ip, quint16 port) {
         }
     }
     else if (fromServer.mode == -100) {
-        cerr << "fromServer.mode: " << fromServer.data.toStdString() << endl;
+        // cerr << "fromServer.mode: " << fromServer.data.toStdString() << endl;
         return false;
     }
     return true;
 }
 
 void MainWindow::newBlockchain(const Blockchain<File>& importedChain, const QByteArray &packet) {
-    cerr << "In newBlockchain" << endl;
+    // cerr << "In newBlockchain" << endl;
     QByteArray importedHash = QCryptographicHash::hash(packet, QCryptographicHash::Sha3_512).toHex();
     QByteArray commonHash = checkForUpdates();
 
-    cerr << "ImportedHash: " << importedHash.toStdString() << endl;
-    cerr << "CommonHash: " << commonHash.toStdString() << endl;
+    // cerr << "ImportedHash: " << importedHash.toStdString() << endl;
+    // cerr << "CommonHash: " << commonHash.toStdString() << endl;
 
     if (commonHash != bChainHash) {
         if ((hashMap[commonHash].size() > 1) || (!mode)) {
@@ -434,7 +434,7 @@ QByteArray MainWindow::checkForUpdates() {
     QByteArray commonHash;
     size_t maxSize = 0;
     for (const auto& iter : hashMap) {
-        cerr << "iter.first: " << iter.first.toStdString() << endl;
+        // cerr << "iter.first: " << iter.first.toStdString() << endl;
         if (iter.second.size() > maxSize) {
             maxSize = iter.second.size();
             commonHash = iter.first;
@@ -485,7 +485,7 @@ void MainWindow::displayError(int socketError, const QString &message, const QSt
         }
     }
 
-    cerr << "still here in display error...\n";
+    // cerr << "still here in display error...\n";
     removeConnectection(ip, port);
 }
 
@@ -494,7 +494,7 @@ bool MainWindow::removeConnectection(const QString& ip, quint16 port) {
         if ((connections[i].ipAddr == ip) && (connections[i].portAddr == port)) {
             connections[i] = connections.back();
             connections.pop_back();
-            cerr << "removing connection...\n";
+            // cerr << "removing connection...\n";
             return true;
         }
     }

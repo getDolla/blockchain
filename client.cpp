@@ -67,11 +67,11 @@ Package Client::talk(const QString &hostName, quint16 port, qint8 theMode, const
     socket.connectToHost(hostName, port);
     connect(&socket, SIGNAL(disconnected()), &socket, SLOT(deleteLater()));
 
-    cerr << "Attempted connection in client::talk\n";
+    // cerr << "Attempted connection in client::talk\n";
 
     if (!socket.waitForConnected(Timeout)) {
         emit error(socket.error(), socket.errorString(), hostName, port);
-        cerr << "throwing error in client...\n";
+        // cerr << "throwing error in client...\n";
         return Package("Error has occured", -100);
     }
     emit addConnection(hostName, port);
@@ -82,16 +82,16 @@ Package Client::talk(const QString &hostName, quint16 port, qint8 theMode, const
     out << serverPort;
     out << theMode;
 
-    cerr << QString::number(theMode).toStdString() << endl;
+    // cerr << QString::number(theMode).toStdString() << endl;
 
     if (theMode > 1) {
         out << theData;
-        cerr << theData.toStdString() << endl;
+        // cerr << theData.toStdString() << endl;
     }
 
     out.device()->seek(0);
     out << (quint64)(block.size() - sizeof(quint64));
-    cerr << (quint64)(block.size() - sizeof(quint64)) << endl;
+    // cerr << (quint64)(block.size() - sizeof(quint64)) << endl;
 
     if(socket.state() == QAbstractSocket::ConnectedState) {
         socket.write(block);
@@ -99,36 +99,36 @@ Package Client::talk(const QString &hostName, quint16 port, qint8 theMode, const
 
     if (!socket.waitForBytesWritten(Timeout)) {
         emit error(socket.error(), socket.errorString(), hostName, port);
-        cerr << "throwing error in client...\n";
+        // cerr << "throwing error in client...\n";
         return Package("Error has occured", -100);
     }
 
     while (socket.bytesAvailable() < (quint64)sizeof(quint64)) {
         if (!socket.waitForReadyRead(2 * Timeout)) {
-            cerr << "In the socket.bytesAvail loop (3rd one)\n";
+            // cerr << "In the socket.bytesAvail loop (3rd one)\n";
             emit error(socket.error(), socket.errorString(), hostName, port);
-            cerr << "throwing error in client...\n";
+            // cerr << "throwing error in client...\n";
             return Package("Error has occured", -100);
         }
     }
-    cerr << "out of the socket.bytesAvail loop (3rd one)\n";
+    // cerr << "out of the socket.bytesAvail loop (3rd one)\n";
 
     quint64 blockSize;
     QDataStream in(&socket);
     in >> blockSize;
-    cerr << blockSize << endl;
+    // cerr << blockSize << endl;
 
     while (socket.bytesAvailable() < blockSize) {
         if (!socket.waitForReadyRead(2 * Timeout)) {
             emit error(socket.error(), socket.errorString(), hostName, port);
-            cerr << "throwing error in client...\n";
+            // cerr << "throwing error in client...\n";
             return Package("Error has occured", -100);
         }
     }
 
     qint8 serverMode;
     in >> serverMode;
-    cerr << QString::number(serverMode).toStdString() << endl;
+    // cerr << QString::number(serverMode).toStdString() << endl;
 
     if ((!serverMode) || (serverMode == -100)) {
         return Package("", serverMode);

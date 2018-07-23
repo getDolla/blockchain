@@ -96,7 +96,7 @@ Dialog::Dialog(const vector<Connection>& connections):
 }
 
 Dialog::~Dialog() {
-//    cerr << "In destructor..." << endl;
+//    // cerr << "In destructor..." << endl;
     delete hostLabel;
     delete portLabel;
     delete button;

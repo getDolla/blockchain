@@ -68,8 +68,8 @@ Server::Server(Blockchain<File>* chainPtr):
     }
 
     connect(tcpServer, SIGNAL(newConnection()), this, SLOT(handleConnection()));
-    cerr << "In server(), checking on index... " << blockChainPtr->getInd() << endl;
-    cerr << "In server(), blockChainptr: " << blockChainPtr << endl;
+    // cerr << "In server(), checking on index... " << blockChainPtr->getInd() << endl;
+    // cerr << "In server(), blockChainptr: " << blockChainPtr << endl;
 }
 
 Server::~Server() {
@@ -123,7 +123,7 @@ void Server::sessionOpened()
 void Server::handleConnection() {
     while (tcpServer->hasPendingConnections())
         {
-            cerr << "In handleConnection\n";
+            // cerr << "In handleConnection\n";
             QTcpSocket* socket = tcpServer->nextPendingConnection();
             connect(socket, SIGNAL(readyRead()), this, SLOT(readBlocks()));
             connect(socket, SIGNAL(disconnected()), socket, SLOT(deleteLater()));
@@ -146,7 +146,7 @@ void Server::readBlocks() {
     quint64 blockSize;
     QDataStream in(socket);
     in >> blockSize;
-    cerr << blockSize << endl;
+    // cerr << blockSize << endl;
 
     while (socket->bytesAvailable() < blockSize) {
         if (!(socket->waitForReadyRead(Timeout))) {
@@ -168,10 +168,10 @@ void Server::readBlocks() {
 
     qint8 mode;
     in >> mode;
-    cerr << QString::number(mode).toStdString() << endl;
+    // cerr << QString::number(mode).toStdString() << endl;
     qint8 serverMode;
 
-    cerr << "read contents\n";
+    // cerr << "read contents\n";
 
     /* there are 5 modes FROM CLIENT (all NON-negative):
      * 0 : client blockchain is broken -> server sends its blockchain
@@ -185,16 +185,16 @@ void Server::readBlocks() {
         QByteArray packet;
         in >> packet;
 
-        cerr << packet.toStdString() << endl;
+        // cerr << packet.toStdString() << endl;
 
         if (mode == 2) {
-            cerr << "In mode == 2, checking on index... " << blockChainPtr->getInd() << endl;
+            // cerr << "In mode == 2, checking on index... " << blockChainPtr->getInd() << endl;
             serverMode = (packet == (blockChainPtr->hash())) ? 0 : -2;
-            cerr << QString::number(serverMode).toStdString() << endl;
+            // cerr << QString::number(serverMode).toStdString() << endl;
         }
         else if (mode == 3) {
-            cerr << "In mode == 3\n";
-            cerr << "checking on index... " << blockChainPtr->getInd() << endl;
+            // cerr << "In mode == 3\n";
+            // cerr << "checking on index... " << blockChainPtr->getInd() << endl;
 
             QString text = "New blocks received from: ";
             text += "<b>IP Address:</b> " + peerAddress + " <b>Port:</b> ";
@@ -259,15 +259,15 @@ void Server::readBlocks() {
     */
 
     sendBlocks(socket, serverMode);
-    cerr << "gonna disconnect this bad boy\n";
-    cerr << "checking on index... " << blockChainPtr->getInd() << endl;
+    // cerr << "gonna disconnect this bad boy\n";
+    // cerr << "checking on index... " << blockChainPtr->getInd() << endl;
     socket->disconnectFromHost();
-    cerr << "bad boy disconnected\n";
+    // cerr << "bad boy disconnected\n";
 }
 
 void Server::sendBlocks(QTcpSocket *socket, qint8 mode)
 {
-    cerr << "In sendBlocks\n";
+    // cerr << "In sendBlocks\n";
     QByteArray block;
     QDataStream out(&block, QIODevice::WriteOnly);
     out << (quint64) 0;
@@ -275,7 +275,7 @@ void Server::sendBlocks(QTcpSocket *socket, qint8 mode)
 
     QByteArray message;
     if (mode) {
-        cerr << "if (mode)" << endl;
+        // cerr << "if (mode)" << endl;
         if (mode == -1) {
             message = blockChainPtr->hash();
         }
@@ -286,7 +286,7 @@ void Server::sendBlocks(QTcpSocket *socket, qint8 mode)
             if (!ifs.open(QIODevice::ReadOnly)) {
                 QMessageBox messageBox;
                 messageBox.critical(0,"Error",("Cannot open:\n" + path + "\n"));
-                //        cerr << "Can not open: " << path << " !" << endl;
+                //        // cerr << "Can not open: " << path << " !" << endl;
                 exit(1);
             }
 
@@ -295,12 +295,12 @@ void Server::sendBlocks(QTcpSocket *socket, qint8 mode)
         }
 
         out << message;
- //    cerr << (quint64)(block.size() - sizeof(quint64)) << endl;
+ //    // cerr << (quint64)(block.size() - sizeof(quint64)) << endl;
     }
 
     out.device()->seek(0);
     out << (quint64)(block.size() - sizeof(quint64));
-    cerr << "Writing size in server..." << endl;
-    cerr << (quint64)(block.size() - sizeof(quint64)) << endl;
+    // cerr << "Writing size in server..." << endl;
+    // cerr << (quint64)(block.size() - sizeof(quint64)) << endl;
     socket->write(block);
 }
