@@ -78,7 +78,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>储存到区块链</string>
+     <string>上传文件</string>
     </property>
    </widget>
    <widget class="QPushButton" name="Connect">
@@ -94,7 +94,7 @@
      <enum>Qt::LeftToRight</enum>
     </property>
     <property name="text">
-     <string>链接节点</string>
+     <string>连接电脑</string>
     </property>
    </widget>
    <widget class="QLabel" name="portLabel">
@@ -125,7 +125,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>将区块保存到电脑</string>
+     <string>下载文件到电脑</string>
     </property>
    </widget>
    <widget class="QPushButton" name="View">
@@ -138,7 +138,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>显示区块链中的文件</string>
+     <string>显示文件</string>
     </property>
    </widget>
    <widget class="QPushButton" name="UpdateBlockchain">
@@ -151,7 +151,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>更新区块链</string>
+     <string>更新数据</string>
     </property>
    </widget>
    <widget class="QLabel" name="ipLabel">
