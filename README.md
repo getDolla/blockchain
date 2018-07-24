@@ -9,6 +9,9 @@ To Compile, use Qt Creator
 - ### What version do I use?  
 > English version: Use the version marked **EN**  
 > 中文版: 用标 **CN** 的版本  
-
-
+- ### How do I use this?  
+- ### Help! I can't update my blockchain!  
+> Open the **file** blockchain with a text editor and paste this:
+~
 0  1531877114 TkFNRTogIERBVEE6IEdlbmVzaXMgQmxvY2s= 0 91629c3d6c07c2d358688ef3daedf9a420dbeb7d518b08de4bcfa4af2488f400bc3a9ecfd70697780213210ce172e0720adf7c160fb4b6b4cc54489fb36945b9
+~
