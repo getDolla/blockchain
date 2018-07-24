@@ -16,6 +16,7 @@ To Compile, use Qt Creator
 
    * ##### Interface  
    ![interface_en](/images/main_en.jpg "Main Interface")  
+
       * ##### Connect to Another PC  
       > When clicked, user will be prompted to enter the other computer's IP address and port number. Being connected to multiple computers greatly reduces the chance of data corruption and ensures that the blockchain is up to date.  
 
@@ -26,11 +27,11 @@ To Compile, use Qt Creator
       * ##### Update Blockchain  
       > When clicked, the blockchain application will check connected computers for any changes made and updates the blockchain on the user's computer. The blockchain will be saved in `blockchain`.  
 
-   * ##### Saving a file to PC
+   * ##### Saving a file to PC  
    ![save_one_en](/images/save_en.jpg "Listing All Files")  
    > First, click on `List All Files` to get the list of files currently on the blockchain and their respective index  
 
-   ![save_two_en](/images/file_en.jpg "Example Save")
+   ![save_two_en](/images/file_en.jpg "Example Save")  
    > Next, change the index to the number corresponding to the file you want to save on the computer.  
    > Finally, click `Save Block to PC` to select the location of where you want to save the file  
 
@@ -64,6 +65,5 @@ To Compile, use Qt Creator
 0  1531877114 TkFNRTogIERBVEE6IEdlbmVzaXMgQmxvY2s= 0 91629c3d6c07c2d358688ef3daedf9a420dbeb7d518b08de4bcfa4af2488f400bc3a9ecfd70697780213210ce172e0720adf7c160fb4b6b4cc54489fb36945b9
 `  
 
-<a name="中文翻译">
-#   中文翻译
-</a>
+<a name="中文翻译"> </a>  
+# 中文翻译
