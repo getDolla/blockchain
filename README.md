@@ -16,13 +16,10 @@ To Compile, use Qt Creator
 
    * ##### Interface  
    ![interface_en](/images/main_en.jpg "Main Interface")  
-
       * ##### Connect to Another PC  
       > When clicked, user will be prompted to enter the other computer's IP address and port number. Being connected to multiple computers greatly reduces the chance of data corruption and ensures that the blockchain is up to date.  
-
       * ##### Store file to Blockchain  
       > When clicked, user will be prompted to select a file from their computer to be appended (added) to the blockchain (increases the blockchain's length by 1). The hash will be displayed after the file has been added to a block and the block appended (mined) to the chain.  
-
       * ##### Save Block to PC + List All Files (See Below for Usage)  
       * ##### Update Blockchain  
       > When clicked, the blockchain application will check connected computers for any changes made and updates the blockchain on the user's computer. The blockchain will be saved in `blockchain`.  
