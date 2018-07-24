@@ -6,14 +6,14 @@ To Compile, use Qt Creator
 [中文翻译，请点击这里](#中文翻译)
 
 ## FAQ:  
-- ### What version do I use?  
+- #### What version do I use?  
 > English version: Use the version marked **EN**  
 > 中文版: 用标 **CN** 的版本  
-- ### How do I use this?  
-- ### Why should I use this blockchain app instead of cloud-storage?  
-- ### Help! blockchain.exe is frozen/not responding!
+- #### How do I use this?  
+- #### Why should I use this blockchain app instead of cloud-storage?  
+- #### Help! blockchain.exe is frozen/not responding!
 > Just wait (until it crashes). It might be computing the file's hash, sending a large file, or another computer just so happens to upload a file to the blockchain at the same time.  
-- ### Help! I can't update my blockchain!  
+- #### Help! I can't update my blockchain!  
 > Open the **file** blockchain with a text editor and paste this:  
 
 `
