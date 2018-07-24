@@ -15,6 +15,21 @@ Users with the English version can connect to users with the Chinese version and
 - **How do I use this?**  
 On Windows, double-click `Blockchain.exe`, **NOT `blockchain`** to run the application.  
 
+- **Why should I use this blockchain app instead of cloud-storage?**  
+
+##### It is free.  
+##### Companies, such as Long Island Drinks Corp, who renamed themselves to include blockchain in their name saw their stock rose dramatically; [Long Island Drinks Corp's stock rose 200% after being renamed to Long Blockchain](https://cointelegraph.com/news/blockshow-announces-blockshow-americas-2018-conference-in-las-vegas-august-20-21 "Link to News Article").  
+
+- **Help! blockchain.exe is frozen/not responding!**
+Just wait (until it crashes). It might be computing the file's hash, sending a large file, or another computer just so happens to upload a file to the blockchain at the same time.  
+
+- **Help! I can't update my blockchain!**  
+Open the **file** `blockchain` with a text editor and paste this:  
+
+`
+0  1531877114 TkFNRTogIERBVEE6IEdlbmVzaXMgQmxvY2s= 0 91629c3d6c07c2d358688ef3daedf9a420dbeb7d518b08de4bcfa4af2488f400bc3a9ecfd70697780213210ce172e0720adf7c160fb4b6b4cc54489fb36945b9
+`  
+  
 ### Interface  
    ![interface_en](/images/main_en.jpg "Main Interface")  
 ##### Connect to Another PC  
@@ -54,21 +69,8 @@ When clicked, the blockchain application will check connected computers for any 
    88.232.225.36 53945
    83.95.250.94 59178
    238.47.114.69 61170
-   ```
-- **Why should I use this blockchain app instead of cloud-storage?**  
-
-##### It is free.  
-##### Companies, such as Long Island Drinks Corp, who renamed themselves to include blockchain in their name saw their stock rose dramatically; [Long Island Drinks Corp's stock rose 200% after being renamed to Long Blockchain](https://cointelegraph.com/news/blockshow-announces-blockshow-americas-2018-conference-in-las-vegas-august-20-21 "Link to News Article").  
-
-- **Help! blockchain.exe is frozen/not responding!**
-Just wait (until it crashes). It might be computing the file's hash, sending a large file, or another computer just so happens to upload a file to the blockchain at the same time.  
-
-- **Help! I can't update my blockchain!**  
-Open the **file** `blockchain` with a text editor and paste this:  
-
-`
-0  1531877114 TkFNRTogIERBVEE6IEdlbmVzaXMgQmxvY2s= 0 91629c3d6c07c2d358688ef3daedf9a420dbeb7d518b08de4bcfa4af2488f400bc3a9ecfd70697780213210ce172e0720adf7c160fb4b6b4cc54489fb36945b9
-`  
+   ```  
+   
 
 <a name="中文翻译"> </a>  
 # 中文翻译
