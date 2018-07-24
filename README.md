@@ -7,7 +7,7 @@ To Compile, use Qt Creator
 
 ## FAQ:  
 - ### What version do I use?  
-> English version: Use the version marked **EN**
+> English version: Use the version marked **EN**  
 > 中文版: 用标 **CN** 的版本  
 
 
