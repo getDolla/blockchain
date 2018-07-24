@@ -264,7 +264,7 @@ void MainWindow::on_Save_clicked()
 void MainWindow::on_View_clicked()
 {
     for (size_t i = 1; i <= bChain->length(); ++i) {
-        ui->textBrowser->append("<b>" + QString::number(i) + ":</b>");
+        ui->textBrowser->append("<b>Index " + QString::number(i) + ":</b>");
         ui->textBrowser->append(bChain->viewAt(i).getFileName()+"<br>");
     }
 }
