@@ -15,7 +15,7 @@ Users with the English version can connect to users with the Chinese version and
 - **How do I use this?**  
 On Windows, double-click `Blockchain.exe`, **NOT `blockchain`** to run the application.  
 
-* Interface  
+### Interface  
    ![interface_en](/images/main_en.jpg "Main Interface")  
 ##### Connect to Another PC  
       
@@ -31,7 +31,7 @@ When clicked, user will be prompted to select a file from their computer to be a
       
 When clicked, the blockchain application will check connected computers for any changes made and updates the blockchain on the user's computer. The blockchain will be saved in `blockchain`.  
 
-#### Saving a file to PC  
+### Saving a file to PC  
    ![save_one_en](/images/save_en.jpg "Listing All Files")  
    First, click on `List All Files` to get the list of files currently on the blockchain and their respective index  
 
@@ -39,7 +39,7 @@ When clicked, the blockchain application will check connected computers for any 
    Next, change the index to the number corresponding to the file you want to save on the computer.  
    Finally, click `Save Block to PC` to select the location of where you want to save the file  
 
-#### Auto-Connect Feature  
+### Auto-Connect Feature  
    The blockchain app will automatically save all current connections into `connections.txt` when the application closes.  
    If you wish to have the app automatically connect to other computers upon start-up, simply edit `connections.txt`  
    `connections.txt` keeps IP addresses and port numbers of previously connected computers in the following format:  
