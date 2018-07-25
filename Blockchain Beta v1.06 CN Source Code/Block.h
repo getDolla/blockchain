@@ -1,10 +1,5 @@
-//
-// Created by Dave Nash on 20/10/2017.
-// modified by Yeetkai on 25/6/2018
-//
-
-#ifndef TESTCHAIN_BLOCK_H
-#define TESTCHAIN_BLOCK_H
+#ifndef BLOCK_H
+#define BLOCK_H
 
 #include <QDataStream>
 #include <QString>
@@ -107,4 +102,4 @@ bool operator !=(const Block<T>& lhs, const Block<T>& rhs) {
     return !(lhs == rhs);
 }
 
-#endif //TESTCHAIN_BLOCK_H
+#endif

@@ -1,10 +1,5 @@
-//
-// Created by Dave Nash on 20/10/2017.
-// modified by Yeetkai on 25/6/2018
-//
-
-#ifndef TESTCHAIN_BLOCKCHAIN_H
-#define TESTCHAIN_BLOCKCHAIN_H
+#ifndef BLOCKCHAIN_H
+#define BLOCKCHAIN_H
 
 #include <QCoreApplication>
 #include <QString>
@@ -358,4 +353,4 @@ private:
     }
 };
 
-#endif //TESTCHAIN_BLOCKCHAIN_H
+#endif

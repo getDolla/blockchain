@@ -1,5 +1,5 @@
 # Blockchain
-for Revo-Gene  
+for 原创基因 (Revo-Gene)  
 
 To Compile, use Qt Creator  
 
@@ -7,13 +7,12 @@ To Compile, use Qt Creator
 
 ## FAQ:  
 - **What version do I use?**  
-
 English version: Use the version marked **EN**  
 中文版: 用标 **CN** 的版本  
 Users with the English version can connect to users with the Chinese version and vice versa.  
 
 - **How do I use this?**  
-On Windows, double-click `Blockchain.exe`, **NOT `blockchain`** to run the application.  
+On Windows, double-click `Blockchain.exe`, **NOT `blockchain`**, to run the application.  
 
 - **Why should I use this blockchain app instead of cloud-storage?**  
 
@@ -29,21 +28,21 @@ Open the **file** `blockchain` with a text editor and paste this:
 `
 0  1531877114 TkFNRTogIERBVEE6IEdlbmVzaXMgQmxvY2s= 0 91629c3d6c07c2d358688ef3daedf9a420dbeb7d518b08de4bcfa4af2488f400bc3a9ecfd70697780213210ce172e0720adf7c160fb4b6b4cc54489fb36945b9
 `  
-  
+
 ## Interface  
    ![interface_en](/images/main_en.jpg "Main Interface")  
 ##### Connect to Another PC  
-      
+
 When clicked, user will be prompted to enter the other computer's IP address and port number. Being connected to multiple computers greatly reduces the chance of data corruption and ensures that the blockchain is up to date.  
 
 ##### Store file to Blockchain  
-      
+
 When clicked, user will be prompted to select a file from their computer to be appended (added) to the blockchain (increases the blockchain's length by 1). The hash will be displayed after the file has been added to a block and the block appended (mined) to the chain.  
 
 ##### Save Block to PC + List All Files (See Below for Usage)  
-      
+
 ##### Update Blockchain  
-      
+
 When clicked, the blockchain application will check connected computers for any changes made and updates the blockchain on the user's computer. The blockchain will be saved in `blockchain`.  
 
 ### Saving a file to PC  
@@ -70,7 +69,15 @@ When clicked, the blockchain application will check connected computers for any 
    83.95.250.94 59178
    238.47.114.69 61170
    ```  
-   
+
 
 <a name="中文翻译"> </a>  
-# 中文翻译
+# 中文翻译  
+## 常问问题:  
+- **我用的是什么版本?**  
+中文版: 用标 **CN** 的版本  
+English version: Use the version marked **EN**  
+具有英文版本的用户可以使用中文版本连接到用户，反之亦然。  
+
+- **我怎么用?**  
+在Windows上，双击`Blockchain.exe`，**不要点击`blockchain`**，以运行程序。
