@@ -37,7 +37,7 @@ When clicked, user will be prompted to enter the other computer's IP address and
 
 ##### Store file to Blockchain  
 
-When clicked, user will be prompted to select a file from their computer to be appended (added) to the blockchain (increases the blockchain's length by 1). The hash will be displayed after the file has been added to a block and the block appended (mined) to the chain.  
+When clicked, user will be prompted to select a file from their computer to be appended (added) to the blockchain (increases the blockchain's length by 1). The block's hash will be displayed after the file has been added to a block and the block has been appended (mined) to the chain.  
 
 ##### Save Block to PC + List All Files (See Below for Usage)  
 
@@ -80,7 +80,7 @@ English version: Use the version marked **EN**
 具有英文版本的用户可以使用中文版本连接到用户，反之亦然。  
 
 - **我怎么用?**  
-在Windows上，双击`Blockchain.exe`，**不要点击`blockchain`**，以运行程序。  
+在Windows上，双击 `Blockchain.exe`，**不要点击 `blockchain` **，以运行程序。  
 
 - **为什么我应该使用这个区块链应用而不是云存储?**  
    ##### 是免费的。   
@@ -99,6 +99,14 @@ English version: Use the version marked **EN**
 ## 前端  
 ![interface_cn](/images/main_cn.jpg "前端")  
 ##### 连接电脑  
+
+点击后，用户会要输入另一台计算机的IP地址和端口号。连接到多台计算机可以大大降低数据损坏的可能性，并确保区块链是最新的。
+
 ##### 上传文件  
-##### 下载文件到电脑 + 显示文件  
+
+点击后，用户会要从其计算机中选择要附加（添加）到区块链的文件（区块链的长度会增加一个块）。文件被保存到区块链后，区块的哈希会被显示到。
+
+##### 下载文件到电脑 + 显示文件 （见下面的用法）  
+
 ##### 更新数据  
+点击后，区块链应用程序会检查连接的计算机是否进行了任何更改，并更新用户计算机上的区块链。 区块链将保存在 `blockchain` 文件上。
