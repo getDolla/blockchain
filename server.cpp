@@ -192,6 +192,7 @@ void Server::readBlocks() {
                                                + peerAddress + " <b>Port:</b> " + QString::number(otherPort) + "<br>");
                     }
                 }
+                emit modeChange();
                 serverMode = 0;
             }
             else {

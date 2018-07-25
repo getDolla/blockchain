@@ -192,6 +192,7 @@ void Server::readBlocks() {
                                                + peerAddress + " <b>端口:</b> " + QString::number(otherPort) + " 同步。<br>");
                     }
                 }
+                emit modeChange();
                 serverMode = 0;
             }
             else {

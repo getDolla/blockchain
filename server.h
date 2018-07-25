@@ -41,6 +41,7 @@ signals:
     void error(int socketError, const QString &message, const QString& ip, quint16 port);
     void updateBlockchain(const Blockchain<File>& importedChain, const QByteArray& packet);
     void lengthAdded();
+    void modeChange();
 
 private slots:
     void sessionOpened();

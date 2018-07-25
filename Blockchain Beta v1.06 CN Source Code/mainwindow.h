@@ -74,6 +74,8 @@ private slots:
 
     void updateLengthDisplay();
 
+    void changeMode();
+
 private:
     //order of declation = order of being initialized!
     Ui::MainWindow *ui;

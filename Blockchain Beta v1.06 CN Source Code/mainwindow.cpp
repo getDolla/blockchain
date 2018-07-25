@@ -33,6 +33,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(server, SIGNAL(error(int,QString,QString,quint16)), this, SLOT(displayError(int,QString,QString,quint16)));
     connect(server, SIGNAL(updateBlockchain(Blockchain<File>, QByteArray)), this, SLOT(newBlockchain(Blockchain<File>, QByteArray)));
     connect(server, SIGNAL(lengthAdded()), this, SLOT(updateLengthDisplay()));
+    connect(server, SIGNAL(modeChange()), this, SLOT(changeMode()));
 
     connect(&client, SIGNAL(error(int,QString,QString,quint16)), this, SLOT(displayError(int,QString,QString,quint16)));
     connect(&client, SIGNAL(addConnection(QString,quint16)), this, SLOT(saveConnection(QString,quint16)));
@@ -509,4 +510,13 @@ bool MainWindow::removeConnectection(const QString& ip, quint16 port) {
 
 void MainWindow::updateLengthDisplay() {
     ui->label->setText("区块链长度: " + QString::number(bChain->length()));
+}
+
+void MainWindow::changeMode() {
+    if (!mode) {
+        ui->Connect->setEnabled(true);
+        ui->Store->setEnabled(true);
+        ui->UpdateBlockchain->setEnabled(true);
+        mode = 2;
+    }
 }
