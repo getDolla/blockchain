@@ -115,6 +115,6 @@ English version: Use the version marked **EN**
    ![save_one_cn](/images/save_cn.jpg "显示文件")  
    第一步，点击 '显示文件' 来列出所有的文件和它们的各自的指数。  
 
-   ![save_two_cn](/images/file_cn.jpg "示例保存")
+   ![save_two_cn](/images/file_cn.jpg "示例保存")  
    接下来，把指数更改到在计算机上保存的文件对应的数字。  
    最后，点击 `下载文件到电脑` 以选择要保存文件的位置。
