@@ -20,7 +20,7 @@ On Windows, double-click `Blockchain.exe`, **NOT `blockchain`**, to run the appl
    ##### It is free.  
    ##### Companies, such as Long Island Drinks Corp, who renamed themselves to include blockchain in their name saw their stock rose dramatically; [Long Island Drinks Corp's stock rose 200% after being renamed to Long Blockchain](https://cointelegraph.com/news/blockshow-announces-blockshow-americas-2018-conference-in-las-vegas-august-20-21 "Link to News Article").  
 
-- **Help! blockchain.exe is frozen/not responding!**
+- **Help! blockchain.exe is frozen/not responding!**  
 Just wait (until it crashes). It might be computing the file's hash, sending a large file, or another computer just so happens to upload a file to the blockchain at the same time.  
 
 - **Help! I can't update my blockchain!**  
