@@ -149,7 +149,7 @@ public:
         QFile blockchain(path);
 
         if (start == 0) {
-            if (!blockchain.open(QIODevice::WriteOnly)) {
+            if (!blockchain.open(QIODevice::WriteOnly | QIODevice::Text)) {
                 QMessageBox messageBox;
                 messageBox.critical(0,"Error",("Cannot open:\n" + path + "\n"));
     //            // cerr << "Can not open: " << path << " !" << endl;
@@ -157,7 +157,7 @@ public:
             }
         }
         else {
-            if (!blockchain.open(QIODevice::Append)) {
+            if (!blockchain.open(QIODevice::Append | QIODevice::Text)) {
                 QMessageBox messageBox;
                 messageBox.critical(0,"Error",("Cannot open:\n" + path + "\n"));
     //            // cerr << "Can not open: " << path << " !" << endl;
@@ -182,7 +182,7 @@ public:
 
             blockStr << block->getNonce() << " ";
     //            // cerr << block.getNonce() << endl;
-            blockStr << block->sHash << "\n";
+            blockStr << block->sHash << endl;
     //            // cerr << block.sHash.toStdString() << endl;
         }        
 

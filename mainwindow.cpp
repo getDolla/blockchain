@@ -61,7 +61,9 @@ MainWindow::MainWindow(QWidget *parent) :
                 setUpConnection(serverIP, serverPort);
             }
 
-            errors = bChain->getErrors();
+            if (connections.size() > 0) {
+                errors = bChain->getErrors();
+            }
         }
     }
 
@@ -185,7 +187,7 @@ void MainWindow::on_Store_clicked()
             exit(1);
         }
 
-        qint64 pos = blockchain.size() - 1;
+        qint64 pos = blockchain.size() - 2;
 
         do {
             blockchain.seek(--pos);
@@ -316,7 +318,7 @@ bool MainWindow::setUpConnection(const QString &ip, quint16 port) {
         }
 
         if (mode == 3) {
-            qint64 pos = blockchain.size() - 1;
+            qint64 pos = blockchain.size() - 2;
 
             do {
                 blockchain.seek(--pos);
