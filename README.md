@@ -48,7 +48,7 @@ When clicked, the blockchain application will check connected computers for any 
 
 ### Saving a file to PC  
    ![save_one_en](/images/save_en.jpg "Listing All Files")  
-   First, click on `List All Files` to get the list of files currently on the blockchain and their respective index.  
+   First, click on `List All Files` to get the list of files currently on the blockchain and their respective indexes.  
 
    ![save_two_en](/images/file_en.jpg "Example Save")  
    Next, change the index to the number corresponding to the file you want to save on the computer.  
