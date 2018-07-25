@@ -81,7 +81,7 @@ English version: Use the version marked **EN**
 具有英文版本的用户可以使用中文版本连接到用户，反之亦然。  
 
 - **我怎么用?**  
-在Windows上，双击 `Blockchain.exe`，**不要点击 `blockchain` **，以运行程序。  
+在Windows上，双击 `Blockchain.exe`，**不要点击 `blockchain`**，以运行程序。  
 
 - **为什么我应该使用这个区块链应用而不是云存储?**  
    ##### 是免费的。   
