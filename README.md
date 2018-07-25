@@ -23,7 +23,7 @@ On Windows, double-click `Blockchain.exe`, **NOT `blockchain`**, to run the appl
 Just wait (until it crashes). It might be computing the file's hash, sending a large file, or another computer just so happens to upload a file to the blockchain at the same time.  
 
 - **Help! I can't update my blockchain!**  
-Open the **file** `blockchain` with a text editor and paste this:  
+Open the **file** `blockchain` with a text editor, delete all text, then paste this:  
 
 `
 0  1531877114 TkFNRTogIERBVEE6IEdlbmVzaXMgQmxvY2s= 0 91629c3d6c07c2d358688ef3daedf9a420dbeb7d518b08de4bcfa4af2488f400bc3a9ecfd70697780213210ce172e0720adf7c160fb4b6b4cc54489fb36945b9
@@ -80,4 +80,25 @@ English version: Use the version marked **EN**
 具有英文版本的用户可以使用中文版本连接到用户，反之亦然。  
 
 - **我怎么用?**  
-在Windows上，双击`Blockchain.exe`，**不要点击`blockchain`**，以运行程序。
+在Windows上，双击`Blockchain.exe`，**不要点击`blockchain`**，以运行程序。  
+
+- **为什么我应该使用这个区块链应用而不是云存储?**  
+   ##### 是免费的。   
+   ##### 公司，例如长岛饮料公司（Long Island Drinks Corp），改名为自己的名称包括区块链后看到自己的股票大幅上涨; [Long Island Drinks Corp的股票在更名为Long Blockchain后股价上涨200％](https://cointelegraph.com/news/blockshow-announces-blockshow-americas-2018-conference-in-las-vegas-august-20-21 "新闻文章")。  
+
+- **帮帮我! blockchain.exe 被冻结/没有反应!**  
+等一下（直到它崩溃）。它可能是计算文件的哈希值，发送大文件，或其他计算机碰巧同时上传文件到区块链。  
+
+- **帮帮我! 我无法更新我的区块链!**  
+用记事本来打开 `blockchain` **文件**，删除所有文字，然后复制粘贴下列文字:  
+
+`
+0  1531877114 TkFNRTogIERBVEE6IEdlbmVzaXMgQmxvY2s= 0 91629c3d6c07c2d358688ef3daedf9a420dbeb7d518b08de4bcfa4af2488f400bc3a9ecfd70697780213210ce172e0720adf7c160fb4b6b4cc54489fb36945b9
+`  
+
+## 前端  
+![interface_cn](/images/main_cn.jpg "前端")  
+##### 连接电脑  
+##### 上传文件  
+##### 下载文件到电脑 + 显示文件  
+##### 更新数据  
