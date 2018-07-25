@@ -47,15 +47,15 @@ When clicked, the blockchain application will check connected computers for any 
 
 ### Saving a file to PC  
    ![save_one_en](/images/save_en.jpg "Listing All Files")  
-   First, click on `List All Files` to get the list of files currently on the blockchain and their respective index  
+   First, click on `List All Files` to get the list of files currently on the blockchain and their respective index.  
 
    ![save_two_en](/images/file_en.jpg "Example Save")  
    Next, change the index to the number corresponding to the file you want to save on the computer.  
-   Finally, click `Save Block to PC` to select the location of where you want to save the file  
+   Finally, click `Save Block to PC` to select the location of where you want to save the file.  
 
 ### Auto-Connect Feature  
    The blockchain app will automatically save all current connections into `connections.txt` when the application closes.  
-   If you wish to have the app automatically connect to other computers upon start-up, simply edit `connections.txt`  
+   If you wish to have the app automatically connect to other computers upon start-up, simply edit `connections.txt`.  
    `connections.txt` keeps IP addresses and port numbers of previously connected computers in the following format:  
 
    ```
@@ -110,3 +110,11 @@ English version: Use the version marked **EN**
 
 ##### 更新数据  
 点击后，区块链应用程序会检查连接的计算机是否进行了任何更改，并更新用户计算机上的区块链。 区块链将保存在 `blockchain` 文件上。
+
+### 出区块链保存一个文件到电脑上  
+   ![save_one_cn](/images/save_cn.jpg "显示文件")  
+   第一步，点击 '显示文件' 来列出所有的文件和它们的各自的指数。  
+
+   ![save_two_cn](/images/file_cn.jpg "示例保存")
+   接下来，把指数更改到在计算机上保存的文件对应的数字。  
+   最后，点击 `下载文件到电脑` 以选择要保存文件的位置。
