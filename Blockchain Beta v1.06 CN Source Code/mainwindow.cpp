@@ -130,6 +130,8 @@ void MainWindow::updateBlockchain() {
         bChain->save();
         bChainHash = bChain->hash();
     }
+
+    mode = 2;
 }
 
 void MainWindow::on_UpdateBlockchain_clicked()
@@ -376,6 +378,7 @@ bool MainWindow::setUpConnection(const QString &ip, quint16 port) {
             }
             mode = 4;
             setUpConnection(ip, port);
+            mode = 2;
         }
     }
     else if (fromServer.mode == -100) {
