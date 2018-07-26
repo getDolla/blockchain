@@ -181,19 +181,28 @@ void Server::readBlocks() {
                 if (blockChainPtr->hash() !=
                         QCryptographicHash::hash(packet, QCryptographicHash::Sha3_512).toHex()) {
                     if (!(blockChainPtr->equals(importedChain))) {
-                        blockChainPtr->operator =(importedChain);
-                        blockChainPtr->save();
-
-                        emit updateTextBrowser("<b>注意：</b> 区块链已更新！<br>使用来自<b>IP:</b> "
-                                               + peerAddress + " <b>端口:</b> " + QString::number(otherPort) + " 的区块链<br>");
+                        if (blockChainPtr->length() <= importedChain.length()) {
+                            blockChainPtr->operator =(importedChain);
+                            blockChainPtr->save();
+                            emit updateTextBrowser("<b>注意：</b> 区块链已更新！<br>使用来自<b>IP:</b> "
+                                                   + peerAddress + " <b>端口:</b> " + QString::number(otherPort) + " 的区块链<br>");
+                            emit modeChange();
+                            serverMode = 0;
+                        }
+                        else {
+                            emit updateTextBrowser("将此计算机上的区块链发送到: <b>IP:</b> "
+                                                   + peerAddress + " <b>端口:</b> " + QString::number(otherPort) + "<br>");
+                            serverMode = -2;
+                        }
                     }
                     else {
+                        blockChainPtr->save();
                         emit updateTextBrowser("<b>注意：</b> 区块链与 <b>IP:</b> "
                                                + peerAddress + " <b>端口:</b> " + QString::number(otherPort) + " 同步。<br>");
+                        emit modeChange();
+                        serverMode = 0;
                     }
                 }
-                emit modeChange();
-                serverMode = 0;
             }
             else {
                 emit updateTextBrowser("节点 <b>IP:</b> " + peerAddress + " <b>端口:</b> " + QString::number(otherPort)

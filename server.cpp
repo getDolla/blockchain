@@ -181,19 +181,28 @@ void Server::readBlocks() {
                 if (blockChainPtr->hash() !=
                         QCryptographicHash::hash(packet, QCryptographicHash::Sha3_512).toHex()) {
                     if (!(blockChainPtr->equals(importedChain))) {
-                        blockChainPtr->operator =(importedChain);
-                        blockChainPtr->save();
-
-                        emit updateTextBrowser("<b>Note:</b> Blockchain updated!<br>Using blockchain from <b>IP:</b> "
+                        if (blockChainPtr->length() <= importedChain.length()) {
+                            blockChainPtr->operator =(importedChain);
+                            blockChainPtr->save();
+                            emit updateTextBrowser("<b>Note:</b> Blockchain updated!<br>Using blockchain from <b>IP:</b> "
                                                + peerAddress + " <b>Port:</b> " + QString::number(otherPort) + "<br>");
+                            emit modeChange();
+                            serverMode = 0;
+                        }
+                        else {
+                            emit updateTextBrowser("Sending blockchain on this computer to: <b>IP:</b> "
+                                                   + peerAddress + " <b>Port:</b> " + QString::number(otherPort) + "<br>");
+                            serverMode = -2;
+                        }
                     }
                     else {
+                        blockChainPtr->save();
                         emit updateTextBrowser("<b>Note:</b> Blockchain synced with <b>IP:</b> "
                                                + peerAddress + " <b>Port:</b> " + QString::number(otherPort) + "<br>");
+                        emit modeChange();
+                        serverMode = 0;
                     }
                 }
-                emit modeChange();
-                serverMode = 0;
             }
             else {
                 emit updateTextBrowser("Node <b>IP:</b> " + peerAddress + " <b>Port:</b> " + QString::number(otherPort)
@@ -241,7 +250,7 @@ void Server::sendBlocks(QTcpSocket *socket, qint8 mode)
         if (mode == -1) {
             message = blockChainPtr->hash();
         }
-        else {
+        else if (mode == -2) {
             QString path = QCoreApplication::applicationDirPath() + "/blockchain";
             QFile ifs(path);
 
