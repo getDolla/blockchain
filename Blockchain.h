@@ -214,6 +214,7 @@ public:
             for(size_t i = _vChain.size(); i < rhs._vChain.size(); ++i) {
                 _vChain.push_back(rhs._vChain[i]);
             }
+            _nIndex = rhs._nIndex;
         }
 
 //        for (const Block<T>& b : _vChain) {
