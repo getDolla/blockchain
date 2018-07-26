@@ -197,7 +197,7 @@ void Server::readBlocks() {
             }
             else {
                 emit updateTextBrowser("节点 <b>IP:</b> " + peerAddress + " <b>端口:</b> " + QString::number(otherPort)
-                                       + " 有以下问题:<br>" + (blockChainPtr->getErrors()));
+                                       + " 有以下问题:<br>" + errors);
 
                 emit updateTextBrowser("将此计算机上的区块链发送到节点...<br>");
                 serverMode = -2;

@@ -311,6 +311,7 @@ bool MainWindow::setUpConnection(const QString &ip, quint16 port) {
         data = bChainHash;
     }
     else if (mode > 2) {
+        bChain->save();
         QString path = QCoreApplication::applicationDirPath() + "/blockchain";
         QFile blockchain(path);
 
