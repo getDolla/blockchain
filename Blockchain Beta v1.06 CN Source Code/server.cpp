@@ -250,7 +250,7 @@ void Server::sendBlocks(QTcpSocket *socket, qint8 mode)
         if (mode == -1) {
             message = blockChainPtr->hash();
         }
-        else {
+        else if (mode == -2) {
             QString path = QCoreApplication::applicationDirPath() + "/blockchain";
             QFile ifs(path);
 
