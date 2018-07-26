@@ -114,7 +114,7 @@ public:
             // cerr << "decode64: " << decode64.toStdString() << endl;
             // cerr << "nonce: " << nonce << endl;
             // cerr << "_nIndex: " << _nIndex << endl;
-            if (ind != _nIndex) {
+            if (prevHash == _vChain.back().sHash) {
                 // cerr << "inside the if statement!\n";
                 T dataIn = (QByteArray::fromBase64(decode64));
                  // cout << "decoded:\n" << QByteArray::fromBase64(decode64).toStdString() << endl;
@@ -135,6 +135,11 @@ public:
                 _nIndex = ind;
                 _vChain.push_back(block);
                 ++counter;
+            }
+            else {
+                errors += "块 " + QString::number(ind) + " 无法连接到块 " + QString::number(ind - 1) + " !\n";
+                save(_vChain.size() - counter);
+                return false;
             }
         }
 
@@ -307,7 +312,7 @@ private:
 
             //gets other blocks
             while (!(chainStr >> ind >> prevHash >> datTime >> decode64 >> nonce).atEnd()) {
-                if (ind != _nIndex) {
+                if (prevHash == _vChain.back().sHash) {
     //                // cerr << decode64.toStdString() << endl;
     //                T dataIn = (QByteArray(base64_decode(decode64.data()).c_str()));
                     T dataIn = (QByteArray::fromBase64(decode64));
@@ -340,6 +345,14 @@ private:
                     _nIndex = ind;
                     _vChain.push_back(block);
                     // cerr << "in readfromstream, _nIndex: " << _nIndex << endl;
+                }
+                else {
+                    errors += "块 " + QString::number(ind) + " 无法连接到块 " + QString::number(ind - 1) + " !\n";
+                    if (flag) {
+                        QMessageBox messageBox;
+                        messageBox.critical(0,"错误", "块 " + QString::number(ind) + " 无法连接到块 " + QString::number(ind - 1) + " !\n");
+//                            exit(1);
+                    }
                 }
             }
         }
