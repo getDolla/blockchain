@@ -357,6 +357,7 @@ private:
                         messageBox.critical(0,"Error", "Hash mismatch between blocks " + QString::number(ind) + " and " + QString::number(ind - 1) +"\n");
 //                            exit(1);
                     }
+                    return false;
                 }
             }
         }

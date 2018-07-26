@@ -353,6 +353,7 @@ private:
                         messageBox.critical(0,"错误", "块 " + QString::number(ind) + " 无法连接到块 " + QString::number(ind - 1) + " !\n");
 //                            exit(1);
                     }
+                    return false;
                 }
             }
         }
