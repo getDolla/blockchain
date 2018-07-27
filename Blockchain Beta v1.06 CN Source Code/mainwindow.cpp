@@ -80,10 +80,6 @@ MainWindow::MainWindow(QWidget *parent) :
         ui->Store->setEnabled(false);
         ui->UpdateBlockchain->setEnabled(false);
     }
-
-    // cerr << "in MainWindow(), checking index... " << bChain->getInd() << endl;
-    // cerr << "this: " << this << endl;
-    // cerr << "bChain: " << bChain << endl;
  }
 
 MainWindow::~MainWindow()

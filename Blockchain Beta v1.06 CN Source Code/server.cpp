@@ -29,8 +29,6 @@ Server::Server(Blockchain<File>* chainPtr):
     }
 
     connect(tcpServer, SIGNAL(newConnection()), this, SLOT(handleConnection()));
-    // cerr << "In server(), checking on index... " << blockChainPtr->getInd() << endl;
-    // cerr << "In server(), blockChainptr: " << blockChainPtr << endl;
 }
 
 Server::~Server() {

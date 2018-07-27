@@ -22,7 +22,7 @@ using namespace std;
 template <typename T>
 class Blockchain {
 public:
-    Blockchain(): _nDifficulty(2), _nIndex(0)
+    Blockchain()
     {
         QString path = QCoreApplication::applicationDirPath() + "/blockchain";
 //        // cout << path << endl;
@@ -44,10 +44,9 @@ public:
         readFromStream(blockStr);
 
         blockchain.close();
-        // cerr << "In constructor... _nIndex: " << _nIndex << endl;
     }
 
-    Blockchain(const QByteArray& chainString):_nDifficulty(2), _nIndex(0) {
+    Blockchain(const QByteArray& chainString) {
         // cerr << "In blockchain 2nd constr\n";
         if (!chainString.isEmpty()) {
 //            // cerr << chainString.toStdString() << endl;
@@ -56,7 +55,7 @@ public:
         }
     }
 
-    Blockchain(const Blockchain<T>& otherChain): _nDifficulty(otherChain._nDifficulty), _nIndex(otherChain._nIndex),
+    Blockchain(const Blockchain<T>& otherChain): _nDifficulty(otherChain._nDifficulty),
         errors(otherChain.errors), _vChain(otherChain._vChain)  {
         // cerr << "In copy constructor!" << endl;
     }
@@ -65,10 +64,8 @@ public:
         QMutexLocker locker(&mutex);
         if (this != &rhs) {
             _nDifficulty = rhs._nDifficulty;
-            _nIndex = rhs._nIndex;
             errors = rhs.errors;
             _vChain = rhs._vChain;
-            // cerr << "In operator=... _nIndex: " << _nIndex << endl;
         }
         return *this;
     }
@@ -76,12 +73,12 @@ public:
     QString addBlock(const T& data)
     {
         QMutexLocker locker(&mutex);
-        Block<T> bNew(++_nIndex, data);
+        Block<T> bNew(_vChain.size(), data);
         bNew.sPrevHash = _vChain.back().sHash;
         QString hash = bNew.mineBlock(_nDifficulty);
         _vChain.push_back(bNew);
 
-        save(_nIndex);
+        save(_vChain.size() - 1);
         return hash;
     }
 
@@ -89,7 +86,6 @@ public:
         QMutexLocker locker(&mutex);
         QTextStream blockStr(text);
 //        // cout << text.toStdString() << endl;
-//        // cout << "_nIndex: " << _nIndex << endl;
 
         //Block attributes
         quint64 ind;
@@ -113,7 +109,6 @@ public:
             // cerr << "datTime: " << datTime << endl;
             // cerr << "decode64: " << decode64.toStdString() << endl;
             // cerr << "nonce: " << nonce << endl;
-            // cerr << "_nIndex: " << _nIndex << endl;
             if (prevHash == _vChain.back().sHash) {
                 // cerr << "inside the if statement!\n";
                 T dataIn = (QByteArray::fromBase64(decode64));
@@ -131,8 +126,6 @@ public:
                     save(_vChain.size() - counter);
                     return false;
                 }
-
-                _nIndex = ind;
                 _vChain.push_back(block);
                 ++counter;
             }
@@ -211,7 +204,6 @@ public:
             for(size_t i = _vChain.size(); i < rhs._vChain.size(); ++i) {
                 _vChain.push_back(rhs._vChain[i]);
             }
-            _nIndex = rhs._nIndex;
         }
 
 //        for (const Block<T>& b : _vChain) {
@@ -255,11 +247,8 @@ public:
         return QCryptographicHash::hash(content, QCryptographicHash::Sha3_512).toHex();
     }
 
-//    quint64 getInd() const { return _nIndex; }
-
 private:
-    quint64 _nDifficulty;
-    quint64 _nIndex;
+    quint64 _nDifficulty = 2;
     QString errors;
     QMutex mutex;
     vector<Block<T>> _vChain;
@@ -307,8 +296,6 @@ private:
 //            // cerr << nonce << endl;
 //            // cerr << block.sHash.toStdString() << endl;
 
-            _nIndex = ind;
-            // cerr << "in readfromstream, _nIndex: " << _nIndex << endl;
             _vChain.push_back(block);
 
             //gets other blocks
@@ -343,9 +330,7 @@ private:
 //                    // cerr << nonce << endl;
 //                    // cerr << block.sHash.toStdString() << endl;
 
-                    _nIndex = ind;
                     _vChain.push_back(block);
-                    // cerr << "in readfromstream, _nIndex: " << _nIndex << endl;
                 }
                 else {
                     errors += "块 " + QString::number(ind) + " 无法连接到块 " + QString::number(ind - 1) + " !\n";
@@ -363,7 +348,6 @@ private:
             return true;
         }
 
-        // cerr << "(before return) in readfromstream, _nIndex: " << _nIndex << endl;
         return true;
     }
 };
