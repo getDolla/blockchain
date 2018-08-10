@@ -9,8 +9,7 @@ To Compile, use Qt Creator
 ## FAQ:  
 - **What version do I use?**  
 English version: Use the version marked **EN**  
-中文版: 用标 **CN** 的版本  
-Users with the English version can connect to users with the Chinese version and vice versa.  
+中文版: 用标 **CN** 的版本
 
 - **How do I use this?**  
 On Windows, double-click `Blockchain.exe`, **NOT `blockchain`**, to run the application.  
@@ -77,8 +76,7 @@ When clicked, the blockchain application will check connected computers for any 
 ## 常问问题:  
 - **我用的是什么版本?**  
 中文版: 用标 **CN** 的版本  
-English version: Use the version marked **EN**  
-具有英文版本的用户可以使用中文版本连接到用户，反之亦然。  
+English version: Use the version marked **EN** 
 
 - **我怎么用?**  
 在Windows上，双击 `Blockchain.exe`，**不要点击 `blockchain`**，以运行程序。  
