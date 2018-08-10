@@ -114,6 +114,15 @@ void Server::readBlocks() {
         }
     }
 
+    quint8 transfer;
+    in >> transfer;
+
+    if (transfer != TRANSFERMODE) {
+        sendBlocks(socket, -100);
+        socket->disconnectFromHost();
+        return;
+    }
+
     quint16 otherPort;
     in >> otherPort;
 
@@ -243,7 +252,7 @@ void Server::sendBlocks(QTcpSocket *socket, qint8 mode)
     out << mode;
 
     QByteArray message;
-    if (mode) {
+    if (mode && (mode != -100)) {
         // cerr << "if (mode)" << endl;
         if (mode == -1) {
             message = blockChainPtr->hash();

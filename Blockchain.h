@@ -31,8 +31,7 @@ public:
 
         if (!blockchain.open(QIODevice::ReadOnly)) {
             QMessageBox messageBox;
-            messageBox.critical(0,"Error",("Cannot open:\n" + path + "\n"));
-//            // cerr << "Can not open: " << path.toStdString() << " !" << endl;
+            messageBox.critical(0,"错误",("不能打开:\n" + path + "\n"));
             exit(1);
         }
 
@@ -123,7 +122,7 @@ public:
 
                 if (block.sHash != hash) {
                     // cerr << "In error statement!\n";
-                    errors += "Hash inconsistency at block " + QString::number(ind) + "!\n";
+                    errors += "哈希在区块 #" + QString::number(ind) + " 不一致！\n";
                     save(_vChain.size() - counter);
                     return false;
                 }
@@ -131,7 +130,7 @@ public:
                 ++counter;
             }
             else {
-                errors += "Hash mismatch between blocks " + QString::number(ind) + " and " + QString::number(ind - 1) +"!\n";
+                errors += "块 " + QString::number(ind) + " 无法连接到块 " + QString::number(ind - 1) + " !\n";
                 save(_vChain.size() - counter);
                 return false;
             }
@@ -149,16 +148,14 @@ public:
         if (start == 0) {
             if (!blockchain.open(QIODevice::WriteOnly | QIODevice::Text)) {
                 QMessageBox messageBox;
-                messageBox.critical(0,"Error",("Cannot open:\n" + path + "\n"));
-    //            // cerr << "Can not open: " << path << " !" << endl;
+                messageBox.critical(0,"错误",("不能打开:\n" + path + "\n"));
                 exit(1);
             }
         }
         else {
             if (!blockchain.open(QIODevice::Append | QIODevice::Text)) {
                 QMessageBox messageBox;
-                messageBox.critical(0,"Error",("Cannot open:\n" + path + "\n"));
-    //            // cerr << "Can not open: " << path << " !" << endl;
+                messageBox.critical(0,"错误",("不能打开:\n" + path + "\n"));
                 exit(1);
             }
         }
@@ -240,8 +237,7 @@ public:
 
         if (!ifs.open(QIODevice::ReadOnly)) {
             QMessageBox messageBox;
-            messageBox.critical(0,"Error",("Cannot open:\n" + path + "\n"));
-//            // cerr << "Can not open: " << path.toStdString() << " !" << endl;
+            messageBox.critical(0,"错误",("不能打开:\n" + path + "\n"));
             exit(1);
         }
 
@@ -280,7 +276,7 @@ private:
             chainStr >> hash;
 
             if (block.sHash != hash) {
-                errors += "Hash inconsistency at genesis block!\n";
+                errors += "创世区块的哈希不一致！\n";
                 // cerr << ind << endl;
                 // cerr << block.getDatTime() << endl;
                 // cerr << nonce << endl;
@@ -288,7 +284,7 @@ private:
 
                 if (flag) {
                     QMessageBox messageBox;
-                    messageBox.critical(0,"Error","Hash inconsistency at genesis block!");
+                    messageBox.critical(0,"错误","创世区块的哈希不一致！");
 //                    exit(1);
                 }
 
@@ -312,17 +308,17 @@ private:
                     block = Block<T>(ind, prevHash, datTime, dataIn, nonce);
                     chainStr >> hash;
                     if (block.sHash != hash) {
-                        errors += "Hash inconsistency at block " + QString::number(ind) + "!\n";
-                        // cerr << "Hash inconsistency at block " << ind << "!" << endl;
-                        // cerr << ind << endl;
-                        // cerr << block.sPrevHash.toStdString() << endl;
-                                        // cerr << block.getDatTime() << endl;
-                                        // cerr << nonce << endl;
-                                        // cerr << block.sHash.toStdString() << "\n" << hash.toStdString() << endl;
+                        errors += "哈希在区块 #" + QString::number(ind) + " 不一致！\n";
+//                        // cerr << "Hash inconsistency at block " << ind << "!" << endl;
+//                        // cerr << ind << endl;
+//                        // cerr << block.sPrevHash.toStdString() << endl;
+//                        // cerr << block.getDatTime() << endl;
+//                        // cerr << nonce << endl;
+//                        // cerr << block.sHash.toStdString() << "\n" << hash.toStdString() << endl;
 
                         if (flag) {
                             QMessageBox messageBox;
-                            messageBox.critical(0,"Error", "Hash inconsistency at block " + QString::number(ind) + "\n");
+                            messageBox.critical(0,"错误", "哈希在区块 #" + QString::number(ind) + " 不一致！\n");
 //                            exit(1);
                         }
 
@@ -337,10 +333,10 @@ private:
                     _vChain.push_back(block);
                 }
                 else {
-                    errors += "Hash mismatch between blocks " + QString::number(ind) + " and " + QString::number(ind - 1) +"!\n";
+                    errors += "块 " + QString::number(ind) + " 无法连接到块 " + QString::number(ind - 1) + " !\n";
                     if (flag) {
                         QMessageBox messageBox;
-                        messageBox.critical(0,"Error", "Hash mismatch between blocks " + QString::number(ind) + " and " + QString::number(ind - 1) +"\n");
+                        messageBox.critical(0,"错误", "块 " + QString::number(ind) + " 无法连接到块 " + QString::number(ind - 1) + " !\n");
 //                            exit(1);
                     }
                     return false;

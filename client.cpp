@@ -34,11 +34,14 @@ Package Client::talk(const QString &hostName, quint16 port, qint8 theMode, const
         // cerr << "throwing error in client...\n";
         return Package("Error has occured", -100);
     }
-    emit addConnection(hostName, port);
 
     QByteArray block;
     QDataStream out(&block, QIODevice::WriteOnly);
+
     out << (quint64) 0;
+
+    out << (quint8) TRANSFERMODE;
+
     out << serverPort;
     out << theMode;
 
@@ -91,10 +94,17 @@ Package Client::talk(const QString &hostName, quint16 port, qint8 theMode, const
     // cerr << QString::number(serverMode).toStdString() << endl;
 
     if ((!serverMode) || (serverMode == -100)) {
+        if (!serverMode) {
+            emit addConnection(hostName, port);
+        }
+
         return Package("", serverMode);
     }
 
     QByteArray blockchain;
     in >> blockchain;
+
+
+    emit addConnection(hostName, port);
     return Package(blockchain, serverMode);
 }

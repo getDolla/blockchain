@@ -1,3 +1,17 @@
+/*
+    TRANSFERMODE:
+    0 - ALL
+    1 - PDF
+    2 - JPEG
+    3 - DOC
+    4 - ACCESS
+    5 - EXCEL
+    6 - TXT
+    7 - 质控
+    8 - 生产
+    9 - 库存
+*/
+
 #ifndef SERVER_H
 #define SERVER_H
 
