@@ -381,7 +381,6 @@ bool MainWindow::setUpConnection(const QString &ip, quint16 port) {
     }
     else if (fromServer.mode == -100) {
         // cerr << "fromServer.mode: " << fromServer.data.toStdString() << endl;
-        removeConnectection(ip, port);
         return false;
     }
     return true;
